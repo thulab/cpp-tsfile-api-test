@@ -43,9 +43,10 @@ mvn clean install -P with-cpp -DskipTests
 
 步骤二：配置头文件和库文件
 
-- 头文件目录: 编译后位于 tsfile/cpp/target/build/include 下，将 include 目录复制到测试程序根目录下的 include 目录。
+- 头文件目录: 编译后位于 tsfile/cpp/target/build/include 下，将 include 目录复制到测试程序根目录下的 include 目录（也可以复制 tsfile/cpp/src 目录中内容）。
 - 库文件目录: 编译后位于 tsfile/cpp/target/build/lib，将 lib 目录复制到测试程序根目录下的 lib 目录。
 - 第三方库：编译后位于 tsfile/cpp/third_party/antlr4-cpp-runtime-4/runtime/src 下，将 src 目录下全部文件和文件夹复制到 include 目录（不包含 src 目录）。
+- 其他：由于本程序全部测试用例使用GTest格式进行编写，所以需要安装GTest，详见下方步骤
 
 # 测试
 
@@ -110,6 +111,7 @@ make install
 sudo apt install cpanminus
 sudo cpanm Capture::Tiny
 sudo cpanm DateTime
+hash -r
 lcov --version
 ```
 

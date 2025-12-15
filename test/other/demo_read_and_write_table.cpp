@@ -98,12 +98,13 @@ int demo_write() {
         tablet.add_timestamp(row, timestamp);
         if (row % 2 == 0) {
             tablet.add_value(row, "tag1", "tag1");
+            tablet.add_value(row, "f4", static_cast<float>(12345.12345));
+            tablet.add_value(row, "f5", static_cast<double>(12345.12345));
+        } else {
             tablet.add_value(row, "TAG2", "TAG2");
-            tablet.add_value(row, "F1", true);
+            tablet.add_value(row, "F1", false);
             tablet.add_value(row, "f2", static_cast<int32_t>(12345));
             tablet.add_value(row, "f3", static_cast<int64_t>(12345));
-            tablet.add_value(row, "f4", static_cast<float>(12345.12345));
-            // tablet.add_value(row, "f5", static_cast<double>(12345.12345));
         }
         
     }
@@ -169,10 +170,10 @@ int demo_read() {
         Timestamp timestamp = ret->get_value<Timestamp>(1);
         for (int i = 1; i <= column_num; i++) {
             if (ret->is_null(i)) {
-                std::cout << metadata->get_column_name(i) << "：";
+                std::cout << metadata->get_column_name(i) << ": ";
                 std::cout << "null" << " ";
             } else {
-                std::cout << metadata->get_column_name(i) << "：";
+                std::cout << metadata->get_column_name(i) << ": ";
                 switch (metadata->get_column_type(i)) {
                     case common::BOOLEAN:
                         std::cout << ret->get_value<bool>(i) << "      ";
