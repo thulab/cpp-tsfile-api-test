@@ -22,9 +22,8 @@ INCLUDE_DIRECTORIES(${SDK_INCLUDE_DIR})
 # 指定库文件的目录
 LINK_DIRECTORIES(${SDK_LIB_DIR_RELEASE})
 
-# 包含子项目
+# 添加子目录
 # add_subdirectory(example)
-
-add_subdirectory(test/table)
+add_subdirectory(test)
 
 
