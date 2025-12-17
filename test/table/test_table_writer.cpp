@@ -27,15 +27,16 @@ using namespace storage;
 using namespace common;
 using namespace std;
 
-// 文件路径
-string file_path = "/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile/test_table.tsfile";
+// 文件名（默认位于项目根目录下的data/tsfile）
+string table_file_path = "test_table.tsfile";
+
 // 创建一个具有指定路径的文件来写入tsfile
 storage::WriteFile writer_file_;
 
 /**
  * 将数据类型转换为字符串
  */
-string datatype_to_string(common::TSDataType type) {
+string datatype_to_string_table(common::TSDataType type) {
     switch (type) {
         case common::TSDataType::BOOLEAN:
             return "BOOLEAN";
@@ -63,10 +64,10 @@ string datatype_to_string(common::TSDataType type) {
 }
 
 // 验证数据正确性
-void query_data(string table_name, vector<string> column_names, vector<common::TSDataType> data_types, int expect_row_num) {
+void query_data_table(string table_name, vector<string> column_names, vector<common::TSDataType> data_types, int expect_row_num) {
     // 创建 TsFile 读取器对象，用于读取 TsFile 文件
     storage::TsFileReader reader;
-    reader.open(file_path);
+    reader.open(table_file_path);
 
     // 查询
     int64_t start_time = INT64_MIN;
@@ -80,11 +81,11 @@ void query_data(string table_name, vector<string> column_names, vector<common::T
     auto metadata = ret->get_metadata();
     // 验证列名和数据类型是否与预期一致
     ASSERT_EQ(metadata->get_column_name(1), "time");
-    ASSERT_EQ(metadata->get_column_type(1), common::TSDataType::INT64) << "Data type mismatch expect data type: INT64, actual data type: " << datatype_to_string(metadata->get_column_type(1)) << endl;
+    ASSERT_EQ(metadata->get_column_type(1), common::TSDataType::INT64) << "Data type mismatch expect data type: INT64, actual data type: " << datatype_to_string_table(metadata->get_column_type(1)) << endl;
     for (int i = 2; i <= metadata->get_column_count(); i++) {
-        cout << metadata->get_column_name(i-1) << "[" << datatype_to_string(metadata->get_column_type(i-1)) << "] ";
+        cout << metadata->get_column_name(i-1) << "[" << datatype_to_string_table(metadata->get_column_type(i-1)) << "] ";
         ASSERT_EQ(metadata->get_column_name(i), column_names[i-2]);
-        ASSERT_EQ(metadata->get_column_type(i), data_types[i-2]) << "Data type mismatch expect data type: " << datatype_to_string(data_types[i-2]) << ", actual data type: " << datatype_to_string(metadata->get_column_type(i)) << endl;
+        ASSERT_EQ(metadata->get_column_type(i), data_types[i-2]) << "Data type mismatch expect data type: " << datatype_to_string_table(data_types[i-2]) << ", actual data type: " << datatype_to_string_table(metadata->get_column_type(i)) << endl;
     }
     cout << endl;
 
@@ -146,30 +147,59 @@ void query_data(string table_name, vector<string> column_names, vector<common::T
     ASSERT_EQ(reader.close(), E_OK);
 }
 
-
+// 初始化文件路径
+void init_file_path_table() {
+    // 定义字符数组存储可执行文件路径
+    char result[ PATH_MAX ];
+    // 使用 readlink 函数读取 /proc/self/exe 符号链接获取当前进程可执行文件的实际路径
+    ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+    // 将获取到的路径字符数组转换为 std::string 对象
+    std::string executable_path = std::string( result, (count > 0) ? count : 0 );
+    // 使用 std::filesystem::path 对象解析可执行文件路径并返回目录部分
+    std::filesystem::path path_obj(executable_path);
+    // 获取可执行文件所在目录
+    std::string exec_path = path_obj.parent_path().string();
+    // 获取项目根目录（假设可执行文件在项目根目录或其子目录中）
+    std::filesystem::path root_path(exec_path);
+    // 向上查找直到找到包含"data"目录的根目录
+    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+        root_path = root_path.parent_path();
+    }
+    // 判断是否找到了根目录
+    if (!root_path.empty()) {
+        // 构建完整的文件存放目录路径
+        std::filesystem::path directory_path = root_path / "data" / "tsfile";
+         // 确认目录存在
+        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+            cerr << "Directory does not exist: " << directory_path << endl;
+        }
+        // 构建完整的文件路径
+        std::filesystem::path file_path_ = directory_path / table_file_path;
+        // 只删除指定路径的文件，并在删除前判断文件是否存在
+        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
+            std::filesystem::remove(file_path_);
+        }
+        // 更新全局文件路径变量
+        table_file_path = file_path_.string();
+    } else {
+        cerr << "Directory does not exist: " << root_path;
+    }
+}
 
 // 每个测试用例前后调用：用于清理环境
-class TsFileWriterTest : public ::testing::Test {
+class TsFileWriterTableTest : public ::testing::Test {
     protected:
         // 在每个测试用例执行之前调用
         void SetUp() override {
-            // 确认目录存在
-            if (!filesystem::exists("/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile") || !filesystem::is_directory("/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile")) {
-                cerr << "Directory does not exist: " << "/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile" << endl;
-                return;
-            }
-            // 删除文件
-            for (const auto& entry : filesystem::directory_iterator("/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile")) {
-                if (filesystem::is_regular_file(entry)) {
-                    filesystem::remove(entry.path());
-                }
-            }
+            // 初始化文件路径
+            init_file_path_table();
+            // std::cout << "table_file_path: " << table_file_path << std::endl;
             // 初始化 TsFile 存储模块
             storage::libtsfile_init();
             // 创建文件
             int flags = O_WRONLY | O_CREAT | O_TRUNC;
             mode_t mode = 0666;
-            writer_file_.create(file_path, flags, mode);
+            writer_file_.create(table_file_path, flags, mode);
         }
 
         // 在每个测试用例执行之后调用
@@ -178,7 +208,7 @@ class TsFileWriterTest : public ::testing::Test {
 };
 
 // 测试写入1：全数据类型，不含空值，大小写列名、表名，,跨时间分区，不同设备
-TEST_F(TsFileWriterTest, TestTsFileTableWriter1) {
+TEST_F(TsFileWriterTableTest, TestTsFileTableWriter1) {
     // 声明表名
     string table_name_ = "Table1";
     // 声明列名
@@ -343,11 +373,11 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter1) {
     delete table_schema_;
 
     // 验证数据正确性
-    query_data(table_name_, column_names_, data_types_, 100);
+    query_data_table(table_name_, column_names_, data_types_, 100);
 }
 
 // 测试写入2：含空值（列部分空、TAG列全空、FIELD列全空和全空）,跨时间分区，不同设备
-TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
+TEST_F(TsFileWriterTableTest, TestTsFileTableWriter2) {
     // 声明表名
     string table_name_ = "Table1";
     // 声明列名
@@ -535,12 +565,12 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
     delete table_schema_;
 
     // 验证数据正确性
-    query_data(table_name_, column_names_, data_types_, 100);
+    query_data_table(table_name_, column_names_, data_types_, 100);
 }
 
 
 // // 测试6：1万TAG和FIELD列，1行
-// TEST_F(TsFileWriterTest, TestTsFileTableWriter6) {
+// TEST_F(TsFileWriterTableTest, TestTsFileTableWriter6) {
 //     string table_name = "table1"; // 表名
 //     vector<string> columnNames; // 列名
 //     vector<common::ColumnSchema> column_schemas; // 列的元数据信息
@@ -621,11 +651,11 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
 //     delete schema;
 
 //     // 验证数据正确性
-//     query_data(table_name, columnNames);
+//     query_data_table(table_name, columnNames);
 // }
 
 // // 测试7：10个TAG和FIELD列，1万行写入
-// TEST_F(TsFileWriterTest, TestTsFileTableWriter7) {
+// TEST_F(TsFileWriterTableTest, TestTsFileTableWriter7) {
 //     string table_name = "table7"; // 表名
 //     vector<string> columnNames; // 列名
 //     vector<common::ColumnSchema> column_schemas; // 列的元数据信息
@@ -702,11 +732,11 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
 //     delete writer;
 //     delete schema;
 //     // 验证数据正确性
-//     query_data(table_name, columnNames);
+//     query_data_table(table_name, columnNames);
 // }
 
 // // 测试8：1万设备（TAG列），10测点（FIELD列），100行写入
-// TEST_F(TsFileWriterTest, TestTsFileTableWriter8) {
+// TEST_F(TsFileWriterTableTest, TestTsFileTableWriter8) {
 //     string table_name = "table1"; // 表名
 //     vector<string> columnNames; // 列名
 //     vector<common::ColumnSchema> column_schemas; // 列的元数据信息
@@ -783,11 +813,11 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
 //     delete writer;
 //     delete schema;
 //     // 验证数据正确性
-//     query_data(table_name, columnNames);
+//     query_data_table(table_name, columnNames);
 // }
 
 // // 测试9：10设备（TAG列），1万测点（FIELD列），100行写入
-// TEST_F(TsFileWriterTest, TestTsFileTableWriter9) {
+// TEST_F(TsFileWriterTableTest, TestTsFileTableWriter9) {
 //     string table_name = "table10"; // 表名
 //     vector<string> columnNames; // 列名
 //     vector<common::ColumnSchema> column_schemas; // 列的元数据信息
@@ -870,11 +900,11 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
 //     delete writer;
 //     delete schema;
 //     // 验证数据正确性
-//     query_data(table_name, columnNames);
+//     query_data_table(table_name, columnNames);
 // }
 
 // 测试10：各种编码和压缩方式
-// TEST_F(TsFileWriterTest, TestTsFileTableWriter10) {
+// TEST_F(TsFileWriterTableTest, TestTsFileTableWriter10) {
 //     // 声明表名
 //     string table_name_ = "Table1";
 //     // 声明列名
@@ -1069,11 +1099,11 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
 //     delete table_schema_;
 
 //     // 验证数据正确性
-//     query_data(table_name_, column_names_, data_types_, 100);
+//     query_data_table(table_name_, column_names_, data_types_, 100);
 // }
 
 // // 测试11：多次执行flush
-// TEST_F(TsFileWriterTest, TestTsFileTableWriter11) {
+// TEST_F(TsFileWriterTableTest, TestTsFileTableWriter11) {
 //     string table_name = "table11"; // 表名
 //     // 列名
 //     vector<string> columnNames = 
@@ -1171,5 +1201,5 @@ TEST_F(TsFileWriterTest, TestTsFileTableWriter2) {
 //     delete writer;
 //     delete schema;
 
-//     query_data(table_name, columnNames);
+//     query_data_table(table_name, columnNames);
 // }

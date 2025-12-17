@@ -20,14 +20,53 @@
 #include <iostream>
 #include <writer/tsfile_table_writer.h>
 #include <string>
+// 添加必要的头文件以支持路径操作
+#include <filesystem>
+#include <unistd.h>
 
 // 表名
 std::string table_name = "t1";
 // 文件名
-std::string file_path = "/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile/test_table.tsfile";
+std::string file_path = "test_table.tsfile";
+
+// 初始化文件路径
+void init_file_path() {
+    // 定义字符数组存储可执行文件路径
+    char result[ PATH_MAX ];
+    // 使用 readlink 函数读取 /proc/self/exe 符号链接获取当前进程可执行文件的实际路径
+    ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+    // 将获取到的路径字符数组转换为 std::string 对象
+    std::string executable_path = std::string( result, (count > 0) ? count : 0 );
+    // 使用 std::filesystem::path 对象解析可执行文件路径并返回目录部分
+    std::filesystem::path path_obj(executable_path);
+    // 获取可执行文件所在目录
+    std::string exec_path = path_obj.parent_path().string();
+    // 获取项目根目录（假设可执行文件在项目根目录或其子目录中）
+    std::filesystem::path root_path(exec_path);
+    // 向上查找直到找到包含"data"目录的根目录
+    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+        root_path = root_path.parent_path();
+    }
+    
+    if (!root_path.empty()) {
+        // 构建完整的文件路径
+        std::filesystem::path full_path = root_path / "data" / "tsfile" / file_path;
+        file_path = full_path.string();
+        std::cout << "file_path: " << file_path << std::endl;
+        
+        // 确保目录存在
+        std::filesystem::path dir_path = full_path.parent_path();
+        if (!std::filesystem::exists(dir_path)) {
+            std::filesystem::create_directories(dir_path);
+        }
+    }
+}
 
 // 查询数据
 void query_data() {
+    // 初始化文件路径
+    init_file_path();
+    
     // 初始化 TsFile 存储模块
     storage::libtsfile_init();
     
@@ -139,6 +178,9 @@ void query_data() {
 
 // 写入接口
 int main() {
+    // 初始化文件路径
+    init_file_path();
+    
     // 初始化 TsFile 存储模块
     storage::libtsfile_init();
 

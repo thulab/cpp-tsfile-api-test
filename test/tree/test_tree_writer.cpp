@@ -27,25 +27,54 @@ using namespace storage;
 using namespace common;
 using namespace std;
 
-// 文件路径
-string file_path = "/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile/test_tree.tsfile";
+// 文件路径（默认位于项目根目录下的data/tsfile）
+string tree_file_path = "test_tree.tsfile";
+
+// 初始化文件路径
+void init_file_path_tree() {
+    // 定义字符数组存储可执行文件路径
+    char result[ PATH_MAX ];
+    // 使用 readlink 函数读取 /proc/self/exe 符号链接获取当前进程可执行文件的实际路径
+    ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+    // 将获取到的路径字符数组转换为 std::string 对象
+    std::string executable_path = std::string( result, (count > 0) ? count : 0 );
+    // 使用 std::filesystem::path 对象解析可执行文件路径并返回目录部分
+    std::filesystem::path path_obj(executable_path);
+    // 获取可执行文件所在目录
+    std::string exec_path = path_obj.parent_path().string();
+    // 获取项目根目录（假设可执行文件在项目根目录或其子目录中）
+    std::filesystem::path root_path(exec_path);
+    // 向上查找直到找到包含"data"目录的根目录
+    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+        root_path = root_path.parent_path();
+    }
+    // 判断是否找到了根目录
+    if (!root_path.empty()) {
+        // 构建完整的文件存放目录路径
+        std::filesystem::path directory_path = root_path / "data" / "tsfile";
+         // 确认目录存在
+        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+            cerr << "Directory does not exist: " << directory_path << endl;
+        }
+        // 构建完整的文件路径
+        std::filesystem::path file_path_ = directory_path / tree_file_path;
+        // 只删除指定路径的文件，并在删除前判断文件是否存在
+        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
+            std::filesystem::remove(file_path_);
+        }
+        // 更新全局文件路径变量
+        tree_file_path = file_path_.string();
+    } else {
+        cerr << "Directory does not exist: " << root_path;
+    }
+}
 
 // 每个测试用例前后调用：用于清理环境
-class TsFileWriterTest : public ::testing::Test {
+class TsFileWriterTreeTest : public ::testing::Test {
     protected:
         // 在每个测试用例执行之前调用
         void SetUp() override {
-            // 确认目录存在
-            if (!filesystem::exists("/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile") || !filesystem::is_directory("/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile")) {
-                cerr << "Directory does not exist: " << "/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile" << endl;
-                return;
-            }
-            // 删除文件
-            for (const auto& entry : filesystem::directory_iterator("/data/iotdb-test/test/cpp-tsfile-api-test-v4/data/tsfile")) {
-                if (filesystem::is_regular_file(entry)) {
-                    filesystem::remove(entry.path());
-                }
-            }
+            init_file_path_tree();
         }
 
         // 在每个测试用例执行之后调用
@@ -56,7 +85,7 @@ class TsFileWriterTest : public ::testing::Test {
 /**
  * 将数据类型转换为字符串
  */
-string datatype_to_string(TSDataType type) {
+string datatype_to_string_tree(TSDataType type) {
     switch (type) {
         case TSDataType::BOOLEAN:
             return "BOOLEAN";
@@ -86,37 +115,37 @@ string datatype_to_string(TSDataType type) {
 /**
  * 读取数据进行验证
  */
-void reader(vector<string> path_list, vector<TSDataType> data_types, int64_t start_time, int64_t end_time, int expect_num) { 
+void reader_tree(vector<string> path_list, vector<TSDataType> data_types, int64_t start_time, int64_t end_time, int expect_num) { 
     int actual_num = 0;
-    TsFileReader reader;
-    ASSERT_EQ(reader.open(file_path), E_OK);
+    TsFileReader reader_tree;
+    ASSERT_EQ(reader_tree.open(tree_file_path), E_OK);
     ResultSet* result_set = nullptr;
 
-    ASSERT_EQ(reader.query(path_list, start_time, end_time, result_set), E_OK);
+    ASSERT_EQ(reader_tree.query(path_list, start_time, end_time, result_set), E_OK);
     auto* qds = (QDSWithoutTimeGenerator*)result_set;
     shared_ptr<ResultSetMetadata> result_set_metadata = qds->get_metadata();
-    for (int i = 1; i < result_set_metadata->get_column_count() + 1; i++) {
-        // cout << result_set_metadata->get_column_name(i) << "[" << datatype_to_string(result_set_metadata->get_column_type(i)) << "]  ";
+    for (int i = 1; i < result_set_metadata->get_column_count(); i++) {
+        // cout << result_set_metadata->get_column_name(i) << "[" << datatype_to_string_tree(result_set_metadata->get_column_type(i)) << "]  ";
         ASSERT_EQ(result_set_metadata->get_column_name(i+1), path_list[i-1]) << "Column name mismatch at index " << i << ": expected '" << path_list[i-1] << "', but got '" << result_set_metadata->get_column_name(i) << "'";
-        ASSERT_EQ(result_set_metadata->get_column_type(i+1), data_types[i-1]) << "Data type mismatch at index " << i << ": expected " << datatype_to_string(data_types[i-1]) << ", but got " << datatype_to_string(result_set_metadata->get_column_type(i));
+        ASSERT_EQ(result_set_metadata->get_column_type(i+1), data_types[i-1]) << "Data type mismatch at index " << i << ": expected " << datatype_to_string_tree(data_types[i-1]) << ", but got " << datatype_to_string_tree(result_set_metadata->get_column_type(i+1));
     }
     cout << endl;
     RowRecord *record = qds->get_row_record();
     record->reset();
-    reader.destroy_query_data_set(qds);
-    ASSERT_EQ(reader.close(), E_OK);
+    reader_tree.destroy_query_data_set(qds);
+    ASSERT_EQ(reader_tree.close(), E_OK);
 }
 
 /**
  * 测试注册时间序列1：int TsFileWriter::register_timeseries(const string &device_id, const MeasurementSchema &measurement_schema)
  */
-TEST_F(TsFileWriterTest, RegisterTimeSeries1) {
+TEST_F(TsFileWriterTreeTest, RegisterTimeSeries1) {
     // 创建一个TsFileWriter对象
     TsFileWriter* tsfile_writer_ = new TsFileWriter();
     // 初始化libtsfile库
     libtsfile_init();
     // 生成一个文件名
-    string file_name_ = string(file_path);
+    string file_name_ = string(tree_file_path);
 
     // 设置文件打开的标志:只写模式打开|文件不存在会创建一个新的文件|文件已经存在且能够成功打开文件那么内容会被清空
     int flags = O_WRONLY | O_CREAT | O_TRUNC;
@@ -162,13 +191,13 @@ TEST_F(TsFileWriterTest, RegisterTimeSeries1) {
 /**
  * 测试写入表格数据1：int TsFileWriter::write_table(Tablet &tablet)
  */
-TEST_F(TsFileWriterTest, WriteTable1) {
+TEST_F(TsFileWriterTreeTest, WriteTable1) {
     // 创建一个TsFileWriter对象
     TsFileWriter* tsfile_writer_ = new TsFileWriter();
     // 初始化libtsfile库
     libtsfile_init();
     // 生成一个文件名
-    string file_name_ = string(file_path);
+    string file_name_ = string(tree_file_path);
 
     // 设置文件打开的标志:只写模式打开|文件不存在会创建一个新的文件|文件已经存在且能够成功打开文件那么内容会被清空
     int flags = O_WRONLY | O_CREAT | O_TRUNC;
@@ -248,5 +277,5 @@ TEST_F(TsFileWriterTest, WriteTable1) {
     ASSERT_EQ(tsfile_writer_->close(), E_OK);
 
     // 读取数据进行验证
-    reader(path_list, data_types, 0, max_rows, max_rows);
+    reader_tree(path_list, data_types, 0, max_rows, max_rows);
 }
