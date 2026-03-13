@@ -1,7 +1,7 @@
 # 测试多个文件添加测试文件和源文件文件
 add_executable(main ${CMAKE_SOURCE_DIR}/test/main.cpp 
 # 表模型测试用例
-#${CMAKE_SOURCE_DIR}/test/table/test_table_writer.cpp 
+${CMAKE_SOURCE_DIR}/test/table/test_table_writer.cpp 
 # ${CMAKE_SOURCE_DIR}/test/table/test_register_table_schema.cpp 
 # 树模型测试用例
 # ${CMAKE_SOURCE_DIR}/test/tree/test_tree_writer.cpp
