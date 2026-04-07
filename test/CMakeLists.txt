@@ -2,10 +2,9 @@
 add_executable(main ${CMAKE_SOURCE_DIR}/test/main.cpp
 # 表模型测试用例
 ${CMAKE_SOURCE_DIR}/test/table/test_table_writer.cpp
-# ${CMAKE_SOURCE_DIR}/test/table/test_register_table_schema.cpp
 # 树模型测试用例
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_query_by_row.cpp
-#${CMAKE_SOURCE_DIR}/test/tree/test_tree_writer.cpp
+${CMAKE_SOURCE_DIR}/test/tree/test_tree_writer.cpp
 # 测试覆盖率的源文件
 ${CMAKE_SOURCE_DIR}/include
 )
