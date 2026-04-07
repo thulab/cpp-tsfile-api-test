@@ -96,42 +96,42 @@ void query_data_table(string table_name, vector<string> column_names, vector<com
     while ((ret->next(has_next)) == common::E_OK && has_next) {
         try
         {
-            cout << ret->get_value<Timestamp>("time") << " ";
-            for (int i = 2; i <= metadata->get_column_count(); i++) {
-                if (ret->is_null(i)) {
-                    cout << "null" << " ";
-                } else {
-                    switch (metadata->get_column_type(i)) {
-                        case common::DATE:
-                        case common::INT32:
-                            cout << ret->get_value<int32_t>(i) << " ";
-                            break;
-                        case common::TIMESTAMP:
-                        case common::INT64:
-                            cout << ret->get_value<int64_t>(i) << " ";
-                            break;
-                        case common::FLOAT:
-                            cout << ret->get_value<float>(i) << " ";
-                            break;
-                        case common::DOUBLE:
-                            cout << ret->get_value<double>(i) << " ";
-                            break;
-                        case common::BLOB:
-                        case common::TEXT:
-                        case common::STRING:
-                            cout << ret->get_value<common::String*>(i)
-                                                 ->to_std_string()
-                                      << " ";
-                            break;
-                        case common::BOOLEAN:
-                            cout << (ret->get_value<bool>(i) == 0 ? "false" : "true") << " ";
-                            break;
-                        default:
-                            ASSERT_TRUE(false) << "Unsupported data type: " << metadata->get_column_type(i);
-                    }
-                }
-            }
-            cout << endl;
+        //     cout << ret->get_value<Timestamp>("time") << " ";
+        //     for (int i = 2; i <= metadata->get_column_count(); i++) {
+        //         if (ret->is_null(i)) {
+        //             cout << "null" << " ";
+        //         } else {
+        //             switch (metadata->get_column_type(i)) {
+        //                 case common::DATE:
+        //                 case common::INT32:
+        //                     cout << ret->get_value<int32_t>(i) << " ";
+        //                     break;
+        //                 case common::TIMESTAMP:
+        //                 case common::INT64:
+        //                     cout << ret->get_value<int64_t>(i) << " ";
+        //                     break;
+        //                 case common::FLOAT:
+        //                     cout << ret->get_value<float>(i) << " ";
+        //                     break;
+        //                 case common::DOUBLE:
+        //                     cout << ret->get_value<double>(i) << " ";
+        //                     break;
+        //                 case common::BLOB:
+        //                 case common::TEXT:
+        //                 case common::STRING:
+        //                     cout << ret->get_value<common::String*>(i)
+        //                                          ->to_std_string()
+        //                               << " ";
+        //                     break;
+        //                 case common::BOOLEAN:
+        //                     cout << (ret->get_value<bool>(i) == 0 ? "false" : "true") << " ";
+        //                     break;
+        //                 default:
+        //                     ASSERT_TRUE(false) << "Unsupported data type: " << metadata->get_column_type(i);
+        //             }
+        //         }
+        //     }
+        //     cout << endl;
             actual_row_num++;
         }
         catch(const exception& e)
