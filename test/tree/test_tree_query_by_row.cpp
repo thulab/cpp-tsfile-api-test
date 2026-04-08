@@ -82,7 +82,7 @@ string datatype_to_string(TSDataType type) {
 /**
  * @brief 测试类：用于测试前初始化环境和测试后清理环境
  */
-class TsFileQueryByRowTest : public ::testing::Test {
+class TsFileTreeQueryByRowTest : public ::testing::Test {
    protected:
     void SetUp() override {
         init_file_path();
@@ -543,14 +543,13 @@ int write_multi_device_data(
 /**
  * @brief 测试 1：测试全部数据类型
  */
-TEST_F(TsFileQueryByRowTest, TestAllDataTypes_WithBoundaryValues) {
+TEST_F(TsFileTreeQueryByRowTest, TestAllDataTypes_WithBoundaryValues) {
     // 1. 创建数据
-    string device_id = "root.db1.d1";
+    string device_id = "root.sg1.FeederA";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col", "text_col", "blob_col", "timestamp_col", "date_col"};
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, STRING, TEXT, BLOB, TIMESTAMP, DATE};
     int total_rows = 15;
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
-
     // 2. 读取数据
     TsFileTreeReader reader;
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
@@ -572,7 +571,7 @@ TEST_F(TsFileQueryByRowTest, TestAllDataTypes_WithBoundaryValues) {
 /**
  * @brief 测试 2：测试单设备 - 存在的设备
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Single_Existing) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Single_Existing) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col"};
@@ -602,7 +601,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Single_Existing) {
 /**
  * @brief 测试3：测试单设备 - 不存在的设备
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Single_NotExisting) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Single_NotExisting) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col"};
@@ -625,7 +624,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Single_NotExisting) {
 /**
  * @brief 测试4：测试多设备 - 全存在的设备，每个设备对应测点一致
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_AllExisting1) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_AllExisting1) {
     // 1. 创建数据
     vector<string> device_ids = {"root.db1.d1", "root.db1.d2", "root.db1.d3"};
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col"};
@@ -658,7 +657,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_AllExisting1) {
 /**
  * @brief 测试5：测试多设备 - 全存在的设备，每个设备对应测点不一致
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_AllExisting2) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_AllExisting2) {
     GTEST_SKIP() << "预期只输出存在每个设备的测点，实际会报错不存在：E_NOT_EXIST";
     // 1. 创建数据
     vector<string> device_ids = {"root.db1.d1", "root.db1.d2", "root.db1.d3"};
@@ -694,7 +693,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_AllExisting2) {
 /**
  * @brief 测试6：多设备 - 部分设备不存在，每个设备对应测点一致
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_PartialNotExisting1) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_PartialNotExisting1) {
     GTEST_SKIP() << "预期只输出存在存在的设备，实际会报错不存在：E_DEVICE_NOT_EXIST";
     vector<string> device_ids = {"root.db1.d1", "root.db1.d2", "root.db1.d3"};
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col"};
@@ -727,7 +726,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_PartialNotExisting1) {
 /**
  * @brief 测试7：多设备 - 部分设备不存在，每个设备对应测点不一致
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_PartialNotExisting2) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_PartialNotExisting2) {
     GTEST_SKIP() << "预期只输出存在存在的设备的存在的测点，实际会报错不存在：E_DEVICE_NOT_EXIST";
     // 1. 创建数据
     vector<string> device_ids = {"root.db1.d1", "root.db1.d2", "root.db1.d3"};
@@ -763,7 +762,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_PartialNotExisting2) {
 /**
  * @brief 测试8：多设备 - 全部设备不存在
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_AllNotExisting) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_AllNotExisting) {
     GTEST_SKIP() << "预期只输出空，实际会报错不存在：E_DEVICE_NOT_EXIST";
     // 1. 创建数据
     vector<string> device_ids = {"root.db1.d1", "root.db1.d2", "root.db1.d3"};
@@ -798,7 +797,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Multi_AllNotExisting) {
 /**
  * @brief 测试8：设备 ID - 小写英文
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Lowercase) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Lowercase) {
     // 1. 创建数据
     string device_id = "root.db1.device_lowercase";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -827,7 +826,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Lowercase) {
 /**
  * @brief 测试9：设备 ID - 大写英文
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Uppercase) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Uppercase) {
     // 1. 创建数据
     string device_id = "ROOT.DB1.DEVICE_UPPERCASE";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -856,7 +855,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Uppercase) {
 /**
  * @brief 测试10：设备 ID - 纯数字
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Numbers) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Numbers) {
     // 1. 创建数据
     string device_id = "'root.db1.123456'";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col"};
@@ -884,7 +883,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Numbers) {
 /**
  * @brief 测试11：设备 ID - 下划线
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Underscore) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Underscore) {
     // 1. 创建数据
     string device_id = "'root.db1.______'";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -913,7 +912,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Underscore) {
 /**
  * @brief 测试12：设备 ID - 中文字符
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_UnicodeChinese) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_UnicodeChinese) {
     // 1. 创建数据
     string device_id = "root.db1.设备名称";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -942,7 +941,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_UnicodeChinese) {
 /**
  * @brief 测试13：设备 ID - 特殊字符（只支持部分）
  */
-TEST_F(TsFileQueryByRowTest, TestDeviceId_Space) {
+TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Space) {
     // 1. 创建数据
     string device_id = "'root.db1. !@#'";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -971,7 +970,7 @@ TEST_F(TsFileQueryByRowTest, TestDeviceId_Space) {
 /**
  * @brief 测试14：单测点 - 存在的测点
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Single_Existing) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Single_Existing) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col"};
@@ -999,7 +998,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Single_Existing) {
 /**
  * @brief 测试15：单测点 - 不存在的测点
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Single_NotExisting) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Single_NotExisting) {
     GTEST_SKIP() << "预期输出空，实际会报错不存在：E_NOT_EXIST";
     // 1. 创建数据
     string device_id = "root.db1.d1";
@@ -1028,7 +1027,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Single_NotExisting) {
 /**
  * @brief 测试16：多测点 - 全存在的测点
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Multi_AllExisting) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Multi_AllExisting) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1056,7 +1055,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Multi_AllExisting) {
 /**
  * @brief 测试17：多测点 - 部分测点不存在
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Multi_PartialNotExisting) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Multi_PartialNotExisting) {
     GTEST_SKIP() << "预期输出存在的，实际会报错不存在：E_NOT_EXIST";
     // 1. 创建数据
     string device_id = "root.db1.d1";
@@ -1086,7 +1085,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Multi_PartialNotExisting) {
 /**
  * @brief 测试18：多测点 - 全部测点不存在
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Multi_AllNotExisting) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Multi_AllNotExisting) {
     GTEST_SKIP() << "预期输出空，实际会报错不存在：E_NOT_EXIST";
     // 1. 创建数据
     string device_id = "root.db1.d1";
@@ -1116,7 +1115,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Multi_AllNotExisting) {
 /**
  * @brief 测试19：测试名 — 小写英文
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Lowercase) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Lowercase) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1145,7 +1144,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Lowercase) {
 /**
  * @brief 测试20：测点名 — 大写英文
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Uppercase) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Uppercase) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"BOOL_COL", "INT32_COL", "INT64_COL", "FLOAT_COL", "DOUBLE_COL",
@@ -1174,7 +1173,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Uppercase) {
 /**
  * @brief 测试21：测点名 - 纯数字
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Numbers) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Numbers) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"'1'", "'2'", "'3'", "'4'", "'5'",
@@ -1203,7 +1202,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Numbers) {
 /**
  * @brief 测试22:测点名 - 下划线
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Underscore) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Underscore) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"_", "__", "___", "____", "_____",
@@ -1232,7 +1231,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Underscore) {
 /**
  * @brief 测试23：测点名 - 中文字符
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_UnicodeChinese) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_UnicodeChinese) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"中文", "中文中文", "中文中文中文", "中文中文中文中文", "中文中文中文中文中文",
@@ -1261,7 +1260,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_UnicodeChinese) {
 /**
  * @brief 测试24:测点名 - 特殊字符
  */
-TEST_F(TsFileQueryByRowTest, TestMeasurement_Space) {
+TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Space) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {" !@#1", " !@#2", " !@#3", " !@#4", " !@#5",
@@ -1290,7 +1289,7 @@ TEST_F(TsFileQueryByRowTest, TestMeasurement_Space) {
 /**
  * @brief 测试25：offset 小于 0（相当于值为0）
  */
-TEST_F(TsFileQueryByRowTest, TestOffset_Negative) {
+TEST_F(TsFileTreeQueryByRowTest, TestOffset_Negative) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1319,7 +1318,7 @@ TEST_F(TsFileQueryByRowTest, TestOffset_Negative) {
 /**
  * @brief 测试26：offset 大于等于 0，不超过实际行数
  */
-TEST_F(TsFileQueryByRowTest, TestOffset_Valid) {
+TEST_F(TsFileTreeQueryByRowTest, TestOffset_Valid) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1348,7 +1347,7 @@ TEST_F(TsFileQueryByRowTest, TestOffset_Valid) {
 /**
  * @brief 测试27：offset 超过实际行数
  */
-TEST_F(TsFileQueryByRowTest, TestOffset_ExceedTotal) {
+TEST_F(TsFileTreeQueryByRowTest, TestOffset_ExceedTotal) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1377,7 +1376,7 @@ TEST_F(TsFileQueryByRowTest, TestOffset_ExceedTotal) {
 /**
  * @brief 测试28：limit 小于 0（相当于值为-1）
  */
-TEST_F(TsFileQueryByRowTest, TestLimit_Negative) {
+TEST_F(TsFileTreeQueryByRowTest, TestLimit_Negative) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1406,7 +1405,7 @@ TEST_F(TsFileQueryByRowTest, TestLimit_Negative) {
 /**
  * @brief 测试29：limit 大于等于 0，不超过实际行数
  */
-TEST_F(TsFileQueryByRowTest, TestLimit_Valid) {
+TEST_F(TsFileTreeQueryByRowTest, TestLimit_Valid) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1435,7 +1434,7 @@ TEST_F(TsFileQueryByRowTest, TestLimit_Valid) {
 /**
  * @brief 测试30：limit 超过实际行数
  */
-TEST_F(TsFileQueryByRowTest, TestLimit_ExceedTotal) {
+TEST_F(TsFileTreeQueryByRowTest, TestLimit_ExceedTotal) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1464,7 +1463,7 @@ TEST_F(TsFileQueryByRowTest, TestLimit_ExceedTotal) {
 /**
  * @brief 测试31：limit 小于 offset
  */
-TEST_F(TsFileQueryByRowTest, TestLimit_LessThanOffset) {
+TEST_F(TsFileTreeQueryByRowTest, TestLimit_LessThanOffset) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1493,7 +1492,7 @@ TEST_F(TsFileQueryByRowTest, TestLimit_LessThanOffset) {
 /**
  * @brief 测试32：result_set 空的
  */
-TEST_F(TsFileQueryByRowTest, TestResultSet_Empty) {
+TEST_F(TsFileTreeQueryByRowTest, TestResultSet_Empty) {
     // 1. 创建数据
     string device_id = "root.db1.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",

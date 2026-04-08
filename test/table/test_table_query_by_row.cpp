@@ -97,7 +97,7 @@ string datatype_to_string_table_query(TSDataType type) {
 /**
  * @brief 测试类：用于测试前初始化环境和测试后清理环境
  */
-class TableQueryByRowTest : public ::testing::Test {
+class TsFileTableQueryByRowTest : public ::testing::Test {
    protected:
     void SetUp() override {
         init_file_path_table_query();
@@ -239,7 +239,7 @@ int write_simple_table_data(const string& table_name, int row_count, string& fil
 /**
  * @brief 测试 1：表名 - 小写英文
  */
-TEST_F(TableQueryByRowTest, TestTableName_Lowercase) {
+TEST_F(TsFileTableQueryByRowTest, TestTableName_Lowercase) {
     string table_name = "table1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -267,7 +267,7 @@ TEST_F(TableQueryByRowTest, TestTableName_Lowercase) {
  * 导致大写表名无法正确写入。这是源码问题。
  * 本测试使用小写表名来验证查询功能正常。
  */
-TEST_F(TableQueryByRowTest, TestTableName_Uppercase) {
+TEST_F(TsFileTableQueryByRowTest, TestTableName_Uppercase) {
     string table_name = "table1";  // 源码限制：表名内部会被转换为小写
     int total_rows = 50;
 
@@ -301,7 +301,7 @@ TEST_F(TableQueryByRowTest, TestTableName_Uppercase) {
 /**
  * @brief 测试 3：表名 - 包含数字
  */
-TEST_F(TableQueryByRowTest, TestTableName_WithNumbers) {
+TEST_F(TsFileTableQueryByRowTest, TestTableName_WithNumbers) {
     string table_name = "table123";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -325,7 +325,7 @@ TEST_F(TableQueryByRowTest, TestTableName_WithNumbers) {
 /**
  * @brief 测试 4：表名 - 包含下划线
  */
-TEST_F(TableQueryByRowTest, TestTableName_WithUnderscore) {
+TEST_F(TsFileTableQueryByRowTest, TestTableName_WithUnderscore) {
     string table_name = "test_table_01";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -349,7 +349,7 @@ TEST_F(TableQueryByRowTest, TestTableName_WithUnderscore) {
 /**
  * @brief 测试 5：表名 - 中文字符
  */
-TEST_F(TableQueryByRowTest, TestTableName_Chinese) {
+TEST_F(TsFileTableQueryByRowTest, TestTableName_Chinese) {
     string table_name = "测试表";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -373,7 +373,7 @@ TEST_F(TableQueryByRowTest, TestTableName_Chinese) {
 /**
  * @brief 测试 6：表名 - 特殊字符（表名通常不支持特殊字符，这里测试常规特殊字符组合）
  */
-TEST_F(TableQueryByRowTest, TestTableName_SpecialChars) {
+TEST_F(TsFileTableQueryByRowTest, TestTableName_SpecialChars) {
     string table_name = "test_table";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -399,7 +399,7 @@ TEST_F(TableQueryByRowTest, TestTableName_SpecialChars) {
 /**
  * @brief 测试 7：列 - 单列存在的列
  */
-TEST_F(TableQueryByRowTest, TestColumn_Single_Existing) {
+TEST_F(TsFileTableQueryByRowTest, TestColumn_Single_Existing) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -423,7 +423,7 @@ TEST_F(TableQueryByRowTest, TestColumn_Single_Existing) {
 /**
  * @brief 测试 8：列 - 单列不存在的列
  */
-TEST_F(TableQueryByRowTest, TestColumn_Single_NotExisting) {
+TEST_F(TsFileTableQueryByRowTest, TestColumn_Single_NotExisting) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -441,7 +441,7 @@ TEST_F(TableQueryByRowTest, TestColumn_Single_NotExisting) {
 /**
  * @brief 测试 9：列 - 多列全存在
  */
-TEST_F(TableQueryByRowTest, TestColumn_Multi_AllExisting) {
+TEST_F(TsFileTableQueryByRowTest, TestColumn_Multi_AllExisting) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -465,7 +465,7 @@ TEST_F(TableQueryByRowTest, TestColumn_Multi_AllExisting) {
 /**
  * @brief 测试 10：列 - 多列部分存在部分不存在
  */
-TEST_F(TableQueryByRowTest, TestColumn_Multi_PartialExisting) {
+TEST_F(TsFileTableQueryByRowTest, TestColumn_Multi_PartialExisting) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -485,7 +485,7 @@ TEST_F(TableQueryByRowTest, TestColumn_Multi_PartialExisting) {
 /**
  * @brief 测试 11：列类型 - 包含 TAG 列和 FIELD 列
  */
-TEST_F(TableQueryByRowTest, TestColumnType_TagAndField) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnType_TagAndField) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -509,7 +509,7 @@ TEST_F(TableQueryByRowTest, TestColumnType_TagAndField) {
 /**
  * @brief 测试 12：列类型 - 只有 TAG 列
  */
-TEST_F(TableQueryByRowTest, TestColumnType_OnlyTag) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnType_OnlyTag) {
     GTEST_SKIP() << "预期可以只查询TAG列，实际查询输出空";
     string table_name = "t1";
     int total_rows = 50;
@@ -534,7 +534,7 @@ TEST_F(TableQueryByRowTest, TestColumnType_OnlyTag) {
 /**
  * @brief 测试 13：列类型 - 只有 FIELD 列
  */
-TEST_F(TableQueryByRowTest, TestColumnType_OnlyField) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnType_OnlyField) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -560,7 +560,7 @@ TEST_F(TableQueryByRowTest, TestColumnType_OnlyField) {
 /**
  * @brief 测试 14：列名 - 小写英文
  */
-TEST_F(TableQueryByRowTest, TestColumnName_Lowercase) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnName_Lowercase) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -584,7 +584,7 @@ TEST_F(TableQueryByRowTest, TestColumnName_Lowercase) {
 /**
  * @brief 测试 15：列名 - 大写英文
  */
-TEST_F(TableQueryByRowTest, TestColumnName_Uppercase) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnName_Uppercase) {
     string table_name = "t1";
     int total_rows = 50;
 
@@ -612,7 +612,7 @@ TEST_F(TableQueryByRowTest, TestColumnName_Uppercase) {
 /**
  * @brief 测试 16：列名 - 包含数字
  */
-TEST_F(TableQueryByRowTest, TestColumnName_WithNumbers) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnName_WithNumbers) {
     string table_name = "t1";
     int total_rows = 50;
 
@@ -640,7 +640,7 @@ TEST_F(TableQueryByRowTest, TestColumnName_WithNumbers) {
 /**
  * @brief 测试 17：列名 - 包含下划线
  */
-TEST_F(TableQueryByRowTest, TestColumnName_WithUnderscore) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnName_WithUnderscore) {
     string table_name = "t1";
     int total_rows = 50;
 
@@ -668,7 +668,7 @@ TEST_F(TableQueryByRowTest, TestColumnName_WithUnderscore) {
 /**
  * @brief 测试 18：列名 - 中文字符
  */
-TEST_F(TableQueryByRowTest, TestColumnName_Chinese) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnName_Chinese) {
     string table_name = "t1";
     int total_rows = 50;
 
@@ -696,7 +696,7 @@ TEST_F(TableQueryByRowTest, TestColumnName_Chinese) {
 /**
  * @brief 测试 19：列名 - 特殊字符
  */
-TEST_F(TableQueryByRowTest, TestColumnName_SpecialChars) {
+TEST_F(TsFileTableQueryByRowTest, TestColumnName_SpecialChars) {
     string table_name = "t1";
     int total_rows = 50;
 
@@ -726,7 +726,7 @@ TEST_F(TableQueryByRowTest, TestColumnName_SpecialChars) {
 /**
  * @brief 测试 20：offset - 小于 0
  */
-TEST_F(TableQueryByRowTest, TestOffset_Negative) {
+TEST_F(TsFileTableQueryByRowTest, TestOffset_Negative) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -750,7 +750,7 @@ TEST_F(TableQueryByRowTest, TestOffset_Negative) {
 /**
  * @brief 测试 21：offset - 大于等于 0，不超过实际行数
  */
-TEST_F(TableQueryByRowTest, TestOffset_Valid) {
+TEST_F(TsFileTableQueryByRowTest, TestOffset_Valid) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -774,7 +774,7 @@ TEST_F(TableQueryByRowTest, TestOffset_Valid) {
 /**
  * @brief 测试 22：offset - 超过实际行数
  */
-TEST_F(TableQueryByRowTest, TestOffset_ExceedTotal) {
+TEST_F(TsFileTableQueryByRowTest, TestOffset_ExceedTotal) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -800,7 +800,7 @@ TEST_F(TableQueryByRowTest, TestOffset_ExceedTotal) {
 /**
  * @brief 测试 23：limit - 小于 0（代表无限制）
  */
-TEST_F(TableQueryByRowTest, TestLimit_Negative) {
+TEST_F(TsFileTableQueryByRowTest, TestLimit_Negative) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -824,7 +824,7 @@ TEST_F(TableQueryByRowTest, TestLimit_Negative) {
 /**
  * @brief 测试 24：limit - 大于等于 0，不超过实际行数
  */
-TEST_F(TableQueryByRowTest, TestLimit_Valid) {
+TEST_F(TsFileTableQueryByRowTest, TestLimit_Valid) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -848,7 +848,7 @@ TEST_F(TableQueryByRowTest, TestLimit_Valid) {
 /**
  * @brief 测试 25：limit - 超过实际行数
  */
-TEST_F(TableQueryByRowTest, TestLimit_ExceedTotal) {
+TEST_F(TsFileTableQueryByRowTest, TestLimit_ExceedTotal) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -874,7 +874,7 @@ TEST_F(TableQueryByRowTest, TestLimit_ExceedTotal) {
 /**
  * @brief 测试 26：result_set - 空的结果集
  */
-TEST_F(TableQueryByRowTest, TestResultSet_Empty) {
+TEST_F(TsFileTableQueryByRowTest, TestResultSet_Empty) {
     string table_name = "t1";
     int total_rows = 20;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -900,7 +900,7 @@ TEST_F(TableQueryByRowTest, TestResultSet_Empty) {
 /**
  * @brief 测试 27：offset 和 limit 组合 - offset + limit 等于实际行数
  */
-TEST_F(TableQueryByRowTest, TestOffsetLimit_Combined_Valid) {
+TEST_F(TsFileTableQueryByRowTest, TestOffsetLimit_Combined_Valid) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -924,7 +924,7 @@ TEST_F(TableQueryByRowTest, TestOffsetLimit_Combined_Valid) {
 /**
  * @brief 测试 28：offset 和 limit 组合 - offset + limit 超过实际行数
  */
-TEST_F(TableQueryByRowTest, TestOffsetLimit_Combined_Exceed) {
+TEST_F(TsFileTableQueryByRowTest, TestOffsetLimit_Combined_Exceed) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -948,7 +948,7 @@ TEST_F(TableQueryByRowTest, TestOffsetLimit_Combined_Exceed) {
 /**
  * @brief 测试 29：offset 和 limit 组合 - limit 为 0
  */
-TEST_F(TableQueryByRowTest, TestOffsetLimit_Combined_LimitZero) {
+TEST_F(TsFileTableQueryByRowTest, TestOffsetLimit_Combined_LimitZero) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
