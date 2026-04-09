@@ -567,6 +567,35 @@ TEST_F(TsFileTreeQueryByRowTest, TestAllDataTypes_WithBoundaryValues) {
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+/**
+ * @brief 测试 2：测试多层设备名
+ */
+TEST_F(TsFileTreeQueryByRowTest, TestMultiLevelDeviceId) {
+    GTEST_SKIP() << "待处理，多层设备名查询提示找不到";
+    // 1. 创建数据
+    string device_id = "root.db.w1.s1.d1";
+    vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col", "string_col", "text_col", "blob_col", "timestamp_col", "date_col"};
+    vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, STRING, TEXT, BLOB, TIMESTAMP, DATE};
+    int total_rows = 15;
+    ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
+    // 2. 读取数据
+    TsFileTreeReader reader;
+    ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
+    vector<string> device_ids = {device_id};
+    ResultSet* result_set = nullptr;
+    ASSERT_EQ(reader.queryByRow(device_ids, measurement_names, 0, 10, result_set), E_OK);
+    int row_count = 0;
+    bool has_next = false;
+    while (result_set->next(has_next) == E_OK && has_next) {
+        row_count++;
+    }
+    // 3. 验证结果
+    ASSERT_EQ(row_count, 10);
+    reader.destroy_query_data_set(result_set);
+    ASSERT_EQ(reader.close(), E_OK);
+}
+
+
 
 /**
  * @brief 测试 2：测试单设备 - 存在的设备
