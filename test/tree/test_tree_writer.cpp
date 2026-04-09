@@ -155,7 +155,7 @@ TEST_F(TsFileWriterTreeTest, RegisterTimeSeries1) {
     tsfile_writer_->open(file_name_, flags, mode);
 
     // 注册时间序列（使用默认配压缩编码）
-    string device_id = "root.db1.d1";
+    string device_id = "root.d1";
     vector<string> measurement_names = {
         "BOOLEAN", 
         "INT32", 
@@ -207,7 +207,7 @@ TEST_F(TsFileWriterTreeTest, WriteTable1) {
     tsfile_writer_->open(file_name_, flags, mode);
 
     // 注册时间序列（使用默认配压缩编码）
-    string device_id = "root.db1.d1";
+    string device_id = "root.d1";
     vector<string> measurement_names = {
         "BOOLEAN", 
         "INT32", 
