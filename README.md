@@ -23,7 +23,7 @@
 |—— CMakeLists.txt           # 父 CMakeLists 文件
 |—— compile.sh               # 编译测试用例的脚本
 |—— README.md                # 说明文档
-|—— run_test.sh              # 编译后执行测试的脚本（目前只能指定测试一个测试用例）
+|—— run.sh                   # 编译后执行测试的脚本
 
 ```
 
