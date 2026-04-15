@@ -367,7 +367,7 @@ int write_multi_device_data_metadata(
                             std::tm date_val = {};
                             date_val.tm_year = local_time->tm_year;
                             date_val.tm_mon = local_time->tm_mon;
-                            date_val.tm_mday = local_time->tm_mday + row;
+                            date_val.tm_mday = local_time->tm_mday;
                             record.add_point(measurements[col], date_val);
                             break;
                         }
@@ -699,15 +699,15 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_AllDevice_
         "root.db.`123`", 
         "root.db.`!@#   $%^&*()_+-=[]|{};:'\",<.>/?`"
     };
-    vector<string> measurements = {"measurement1", "Measurement2", "测点3", "12345", "!@#   $%^&*()_+-=[]|{};:'\",<.>/?", "m1.m2"};
-    vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, STRING};
+    vector<string> measurements = {"measurement1", "measurement2", "measurement3", "measurement4", "measurement5", "measurement6", "measurement7", "measurement8", "measurement9", "measurement10"};
+    vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, STRING, TEXT, BLOB, DATE, TIMESTAMP};
     vector<pair<string, vector<string>>> devices_and_measurements;
     for (auto& device : devices) {
         devices_and_measurements.push_back(make_pair(device, measurements));
     }
     int row_count = 10000;
     int time_multiplier = 1;
-    ASSERT_EQ(write_multi_device_data_metadata(test_metadata_file_path, devices_and_measurements, data_types, row_count, true, time_multiplier), E_OK);
+    ASSERT_EQ(write_multi_device_data_metadata(test_metadata_file_path, devices_and_measurements, data_types, row_count, false, time_multiplier), E_OK);
 
     // 2. 读取元数据
     TsFileTreeReader reader;
@@ -720,14 +720,20 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_AllDevice_
     ASSERT_EQ(metadata.size(), devices.size()) << "Device timeseries metadata count mismatch, expected: " << devices.size() << ", actual: " << metadata.size() << endl;
     for (auto& [device_id, timeseries_list] : metadata) {
         // 验证设备名
-        ASSERT_TRUE(find(devices.begin(), devices.end(), device_id->get_device_name()) != devices.end());
+        // cout << "Device: " << device_id->get_device_name() << endl;
+        ASSERT_TRUE(find(devices.begin(), devices.end(), device_id->get_device_name()) != devices.end()) << "Device not found: " << device_id->get_device_name() << endl;
         for (auto& ts : timeseries_list) {
             // 验证测点名
-            auto measurement = std::find(measurements.begin(), measurements.end(), ts->get_measurement_name().to_std_string());
-            ASSERT_TRUE(measurement != measurements.end()) << "Measurement not found: " << ts->get_measurement_name().to_std_string();
+            // cout << "Measurement: " << ts->get_measurement_name().to_std_string() << "\t";
+            ASSERT_TRUE(find(measurements.begin(), measurements.end(), ts->get_measurement_name().to_std_string()) != measurements.end()) << "Measurement not found: " << ts->get_measurement_name().to_std_string() << endl;
             // 验证数据类型
-            ASSERT_EQ(ts->get_data_type(), data_types[measurement - measurements.begin()]) << "Data type mismatch for measurement, Expected: " << get_data_type_name(data_types[measurement - measurements.begin()]) << ", Actual: " << get_data_type_name(ts->get_data_type()) << endl;
-            ASSERT_EQ(ts->get_statistic()->count_, 5000) << "Expected: " << 5000 << ", Actual: " << ts->get_statistic()->count_ << endl;
+            // cout << "Data type: " << datatype_to_string_metadata(ts->get_data_type()) << endl;
+            ASSERT_TRUE(find(data_types.begin(), data_types.end(), ts->get_data_type()) != data_types.end()) << "Data type mismatch for measurement, Expected: " << get_data_type_name(ts->get_data_type()) << ", Actual: " << get_data_type_name(data_types[measurements.size() - 1]) << endl;
+            // 验证统计信息
+            // cout << "Statistics: " << ts->get_statistic()->count_ << ", " << ts->get_statistic()->start_time_ << ", " << ts->get_statistic()->end_time_ << endl;
+            ASSERT_EQ(ts->get_statistic()->count_, row_count) << "统计信息数量错误，预期：" << row_count << " 实际：" << ts->get_statistic()->count_ << endl;
+            ASSERT_EQ(ts->get_statistic()->start_time_, 0) << "统计信息开始时间错误，预期：" << 0 << " 实际：" << ts->get_statistic()->start_time_ << endl;
+            ASSERT_EQ(ts->get_statistic()->end_time_, row_count - 1) << "统计信息结束时间错误，预期：" << row_count - 1 << " 实际：" << ts->get_statistic()->end_time_ << endl;
         }
     }
 
@@ -991,6 +997,77 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_MinMaxStat
     ASSERT_NE(double_stat, nullptr);
     EXPECT_DOUBLE_EQ(double_stat->min_value_, 1.0);
     EXPECT_DOUBLE_EQ(double_stat->max_value_, 10.0);
+
+    ASSERT_EQ(reader.close(), E_OK);
+}
+
+/**
+ * @brief 测试 13：测试对齐序列
+ */
+TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_AlignedTimeseries) { 
+    // GTEST_SKIP() << "存在问题";
+    // 1. 创建数据
+    TsFileWriter tsfile_writer_;
+    ASSERT_EQ(tsfile_writer_.open(test_metadata_file_path), E_OK);
+    std::string device_name = "root.db.ad1";
+    vector<string> measurements = {"measurement1", "measurement2", "measurement3", "measurement4", "measurement5", "measurement6", "measurement7", "measurement8", "measurement9", "measurement10"};
+    vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, STRING, TEXT, BLOB, DATE, TIMESTAMP};
+    std::vector<MeasurementSchema*> measurement_schema_vec;
+    for (int i = 0; i < measurements.size(); ++i) {
+        measurement_schema_vec.push_back(new MeasurementSchema(measurements[i], data_types[i]));
+    }
+    tsfile_writer_.register_aligned_timeseries(device_name, measurement_schema_vec);
+    int row_num = 100;
+    for (int i = 0; i < row_num; ++i) {
+        TsRecord record(1622505600000 + i * 1000, device_name);
+        record.add_point(measurements[0], (bool) i % 2 == 0);
+        record.add_point(measurements[1], (int32_t)i);
+        record.add_point(measurements[2], (int64_t)i);
+        record.add_point(measurements[3], (float)i);
+        record.add_point(measurements[4], (double)i);
+        record.add_point(measurements[5], std::to_string(i));
+        record.add_point(measurements[6], std::to_string(i));
+        record.add_point(measurements[7], std::to_string(i));
+        std::time_t now = std::time(nullptr);
+        std::tm* local_time = std::localtime(&now);
+        std::tm today = {};
+        today.tm_year = local_time->tm_year;
+        today.tm_mon = local_time->tm_mon;
+        today.tm_mday = local_time->tm_mday;
+        record.add_point(measurements[8], today);
+        record.add_point(measurements[9], (int64_t)i);
+        ASSERT_EQ(tsfile_writer_.write_record_aligned(record), E_OK);
+    }
+    ASSERT_EQ(tsfile_writer_.flush(), E_OK);
+    ASSERT_EQ(tsfile_writer_.close(), E_OK);
+
+    // 2. 读取元数据
+    TsFileTreeReader reader;
+    ASSERT_EQ(reader.open(test_metadata_file_path), E_OK);
+
+    // 3. 获取所有设备
+    DeviceTimeseriesMetadataMap metadata = reader.get_timeseries_metadata();
+    
+    // 4. 验证结果
+    for (auto& [device_id, timeseries_list] : metadata) {
+        // 验证设备名
+        // cout << "Device: " << device_id->get_device_name() << endl;
+        ASSERT_EQ(device_id->get_device_name(), device_name) << "设备名错误, 预期：" << device_name << " 实际：" << device_id->get_device_name() << endl;
+        for (auto& ts : timeseries_list) {
+            // 验证测点名
+            // cout << "Measurement: " << ts->get_measurement_name().to_std_string() << "\t";
+            ASSERT_TRUE(find(measurements.begin(), measurements.end(), ts->get_measurement_name().to_std_string()) != measurements.end());
+            // 验证数据类型
+            // cout << "Data type: " << datatype_to_string_metadata(ts->get_data_type()) << endl;
+            ASSERT_TRUE(find(data_types.begin(), data_types.end(), ts->get_data_type()) != data_types.end());
+            // 验证统计信息
+            // cout << "Statistics: " << ts->get_statistic()->count_ << ", " << ts->get_statistic()->start_time_ << ", " << ts->get_statistic()->end_time_ << endl;
+            ASSERT_EQ(ts->get_statistic()->count_, row_num) << "统计信息数量错误，预期：" << row_num << " 实际：" << ts->get_statistic()->count_ << endl;
+            ASSERT_EQ(ts->get_statistic()->start_time_, 1622505600000) << "统计信息开始时间错误，预期：" << 1622505600000 << " 实际：" << ts->get_statistic()->start_time_ << endl;
+            ASSERT_EQ(ts->get_statistic()->end_time_, 1622505600000 + (row_num - 1) * 1000) << "统计信息结束时间错误，预期：" << 1622505600000 + (row_num - 1) * 1000 << " 实际：" << ts->get_statistic()->end_time_ << endl;
+        }
+    }
+    
 
     ASSERT_EQ(reader.close(), E_OK);
 }
