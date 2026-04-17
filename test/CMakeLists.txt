@@ -4,9 +4,11 @@ add_executable(main ${CMAKE_SOURCE_DIR}/test/main.cpp
 ${CMAKE_SOURCE_DIR}/test/table/test_table_writer.cpp
 ${CMAKE_SOURCE_DIR}/test/table/test_table_query_by_row.cpp
 ${CMAKE_SOURCE_DIR}/test/table/test_table_get_timeseries_metadata.cpp
+${CMAKE_SOURCE_DIR}/test/table/test_table_restorable_writer.cpp
 # 树模型测试用例
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_query_by_row.cpp
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_writer.cpp
+${CMAKE_SOURCE_DIR}/test/tree/test_tree_restorable_writer.cpp
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_get_timeseries_metadata.cpp
 # 测试覆盖率的源文件
 ${CMAKE_SOURCE_DIR}/include
