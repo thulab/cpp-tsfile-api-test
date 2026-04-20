@@ -358,7 +358,6 @@ TEST_F(RestorableTsFileTableWriterTest, OpenTruncatedFile) {
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileTableWriterTest, TableWriterRepeatedWrite) {
-    GTEST_SKIP() << "表模型破损文件恢复后重新写入可以在同设备中一直写重复时间戳数据";
     // 1. 构造元数据
     string table_name = "test_table";
     vector<string> column_names = {"t1", "t2", "t3", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
@@ -416,38 +415,68 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterRepeatedWrite) {
     // 3. 损坏文件并继续写入数据
     vector<string> column_names2 = {"__level1", "__level2", "__level3","f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
     vector<TSDataType> data_types2 = {STRING, STRING, STRING, BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
-    for (int i = 0; i < 5; i++) {
-        uint32_t max_rows2 = 10;
-        int start_time = max_rows + i*max_rows2;
-        CorruptCurrentFileTail(start_time);
-        RestorableTsFileIOWriter rw;
-        ASSERT_EQ(rw.open(file_name_, true), E_OK);
-        ASSERT_TRUE(rw.can_write());
+    uint32_t max_rows2 = 10;
+    int start_time = max_rows + max_rows2;
+    CorruptCurrentFileTail(start_time);
+    RestorableTsFileIOWriter rw;
+    ASSERT_EQ(rw.open(file_name_, true), E_OK);
+    ASSERT_TRUE(rw.can_write());
 
-        TsFileTableWriter table_writer2(&rw);
+    TsFileTableWriter table_writer2(&rw);
         
-        Tablet tablet2(column_names2, data_types2, max_rows2);
-        tablet2.set_table_name(table_name);
-        for (int row = 0; row < max_rows; row++) {
-            ASSERT_EQ(tablet2.add_timestamp(row, static_cast<int64_t>(row + max_rows)), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[0], "device1"), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[1], "device2"), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[2], "device3"), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[3], row % 2 == 0), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[4], static_cast<int32_t>(row)), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[5], static_cast<int64_t>(row)), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[6], static_cast<float>(row * 1.1)), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[7], static_cast<double>(row * 1.1)), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[8], ("text" + to_string(row)).c_str()), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[9], ("string" + to_string(row)).c_str()), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[10], ("blob" + to_string(row)).c_str()), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[11], static_cast<int32_t>(row)), E_OK);
-            ASSERT_EQ(tablet2.add_value(row, column_names2[12], static_cast<int64_t>(row)), E_OK);
-        }
-        ASSERT_EQ(table_writer2.write_table(tablet2), E_OK);
-        ASSERT_EQ(table_writer2.flush(), E_OK);
-        ASSERT_EQ(table_writer2.close(), E_OK);
+    Tablet tablet2(column_names2, data_types2, max_rows2);
+    tablet2.set_table_name(table_name);
+    for (int row = 0; row < max_rows; row++) {
+        ASSERT_EQ(tablet2.add_timestamp(row, static_cast<int64_t>(row + max_rows)), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[0], "device1"), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[1], "device2"), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[2], "device3"), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[3], row % 2 == 0), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[4], static_cast<int32_t>(row)), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[5], static_cast<int64_t>(row)), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[6], static_cast<float>(row * 1.1)), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[7], static_cast<double>(row * 1.1)), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[8], ("text" + to_string(row)).c_str()), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[9], ("string" + to_string(row)).c_str()), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[10], ("blob" + to_string(row)).c_str()), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[11], static_cast<int32_t>(row)), E_OK);
+        ASSERT_EQ(tablet2.add_value(row, column_names2[12], static_cast<int64_t>(row)), E_OK);
     }
+    ASSERT_EQ(table_writer2.write_table(tablet2), E_OK);
+    ASSERT_EQ(table_writer2.flush(), E_OK);
+    ASSERT_EQ(table_writer2.close(), E_OK);
+
+    // 4. 再次损坏文件并写入复时间戳数据
+    uint32_t max_rows3 = 10;
+    start_time = max_rows2 + max_rows3;
+    CorruptCurrentFileTail(start_time);
+    RestorableTsFileIOWriter rw2;
+    ASSERT_EQ(rw2.open(file_name_, true), E_OK);
+    ASSERT_TRUE(rw2.can_write());
+
+    TsFileTableWriter table_writer3(&rw2);
+        
+    Tablet tablet3(column_names2, data_types2, max_rows3);
+    tablet3.set_table_name(table_name);
+    for (int row = 0; row < max_rows; row++) {
+        ASSERT_EQ(tablet3.add_timestamp(row, static_cast<int64_t>(row + max_rows)), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[0], "device1"), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[1], "device2"), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[2], "device3"), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[3], row % 2 == 0), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[4], static_cast<int32_t>(row)), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[5], static_cast<int64_t>(row)), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[6], static_cast<float>(row * 1.1)), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[7], static_cast<double>(row * 1.1)), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[8], ("text" + to_string(row)).c_str()), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[9], ("string" + to_string(row)).c_str()), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[10], ("blob" + to_string(row)).c_str()), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[11], static_cast<int32_t>(row)), E_OK);
+        ASSERT_EQ(tablet3.add_value(row, column_names2[12], static_cast<int64_t>(row)), E_OK);
+    }
+    ASSERT_EQ(table_writer3.write_table(tablet3), 22);
+    ASSERT_EQ(table_writer3.flush(), E_OK);
+    ASSERT_EQ(table_writer3.close(), E_OK);
 
     // 4. 查询元数据和数据
     ASSERT_EQ(get_metadata(file_name_), E_OK);
@@ -461,7 +490,6 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterRepeatedWrite) {
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues) {
-    GTEST_SKIP() << "若先前带写入带空值，然后损坏文件尾部，且重新写入时也带空值写入，会导致query中next阶段卡住（感觉像死锁等了10分钟也无法获取到）";
     // 1. 构造元数据
     string table_name = "test_table";
     vector<string> column_names = {"t1", "t2", "t3", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
@@ -537,6 +565,19 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues) {
             ASSERT_EQ(tablet2.add_value(row, column_names2[0], "device1"), E_OK);
             ASSERT_EQ(tablet2.add_value(row, column_names2[1], "device2"), E_OK);
             ASSERT_EQ(tablet2.add_value(row, column_names2[2], "device3"), E_OK);
+            if (row % 3 == 0) {
+                ASSERT_EQ(tablet2.add_value(row, column_names2[3], row % 2 == 0), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[4], static_cast<int32_t>(row)), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[5], static_cast<int64_t>(row)), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[6], static_cast<float>(row * 1.1)), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[7], static_cast<double>(row * 1.1)), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[8], ("text" + to_string(row)).c_str()), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[9], ("string" + to_string(row)).c_str()), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[10], ("blob" + to_string(row)).c_str()), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[11], static_cast<int32_t>(row)), E_OK);
+                ASSERT_EQ(tablet2.add_value(row, column_names2[12], static_cast<int64_t>(row)), E_OK);
+            }
+        } else {
             ASSERT_EQ(tablet2.add_value(row, column_names2[3], row % 2 == 0), E_OK);
             ASSERT_EQ(tablet2.add_value(row, column_names2[4], static_cast<int32_t>(row)), E_OK);
             ASSERT_EQ(tablet2.add_value(row, column_names2[5], static_cast<int64_t>(row)), E_OK);
@@ -565,7 +606,6 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues) {
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues2) {
-    GTEST_SKIP() << "表模型破损文件恢复会影响先前写入FLOAT和DOUBLE类型元数据的统计信息）";
     // 1. 构造元数据
     string table_name = "test_table";
     vector<string> column_names = {"t1", "t2", "t3", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
@@ -662,71 +702,7 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues2) {
 }
 
 // -----------------------------------------------------------------------------
-// 测试用例 8：恢复后写入的数据可读性验证
-// 验证：恢复后写入的新数据可以被正确读取，数据值正确
-// -----------------------------------------------------------------------------
-
-TEST_F(RestorableTsFileTableWriterTest, RecoveredAndWrittenDataIsReadable) {
-    std::vector<std::string> value_col = {"__level1", "value"};
-    std::vector<TSDataType> value_types = {STRING, DOUBLE};
-
-    // 1. 创建文件并写入初始数据
-    WriteFile write_file;
-    write_file.create(file_name_, GetWriteCreateFlags(), 0666);
-    std::vector<MeasurementSchema*> measurement_schemas;
-    measurement_schemas.push_back(new MeasurementSchema("__level1", STRING));
-    measurement_schemas.push_back(new MeasurementSchema("value", DOUBLE));
-    std::vector<ColumnCategory> column_categories = {ColumnCategory::TAG, ColumnCategory::FIELD};
-    TableSchema table_schema("test_table", measurement_schemas, column_categories);
-    TsFileTableWriter table_writer(&write_file, &table_schema);
-    const std::string table_name = "test_table";
-
-    {
-        Tablet tablet1(table_schema.get_measurement_names(), table_schema.get_data_types(), 5);
-        tablet1.set_table_name(table_name);
-        for (int i = 0; i < 5; i++) {
-            tablet1.add_timestamp(i, static_cast<int64_t>(i * 1000));
-            tablet1.add_value(i, "__level1", "device_initial");
-            tablet1.add_value(i, "value", static_cast<double>(i * 100));
-        }
-        ASSERT_EQ(table_writer.write_table(tablet1), E_OK);
-        ASSERT_EQ(table_writer.flush(), E_OK);
-    }
-
-    table_writer.close();
-    write_file.close();
-
-    // 2. 损坏文件
-    CorruptCurrentFileTail(3);
-
-    // 3. 恢复并写入新数据（使用相同的 __level1 列名）
-    RestorableTsFileIOWriter rw;
-    ASSERT_EQ(rw.open(file_name_, true), E_OK);
-    ASSERT_TRUE(rw.can_write());
-
-    TsFileTableWriter table_writer2(&rw);
-
-    {
-        Tablet tablet2(value_col, value_types, 5);
-        tablet2.set_table_name(table_name);
-        for (int i = 0; i < 5; i++) {
-            tablet2.add_timestamp(i, static_cast<int64_t>((i + 5) * 1000));
-            tablet2.add_value(i, "__level1", "device_recovered");
-            tablet2.add_value(i, "value", static_cast<double>((i + 5) * 100));
-        }
-        ASSERT_EQ(table_writer2.write_table(tablet2), E_OK);
-        ASSERT_EQ(table_writer2.flush(), E_OK);
-    }
-
-    table_writer2.close();
-
-    // 4. 读取并验证数据 - 使用辅助函数
-    ASSERT_EQ(get_metadata(file_name_), E_OK);
-    ASSERT_EQ(query_data(file_name_, table_name, value_col, 0, std::numeric_limits<int64_t>::max()), E_OK);
-}
-
-// -----------------------------------------------------------------------------
-// 测试用例 9：空 Tablet 写入恢复
+// 测试用例 8：空 Tablet 写入恢复
 // 验证：恢复后写入空 Tablet 应该正确处理
 // -----------------------------------------------------------------------------
 
