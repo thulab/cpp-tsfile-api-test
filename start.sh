@@ -74,9 +74,32 @@ prepare() {
   echo "=== 同步 SDK 头文件和库文件 ==="
   local cpp="$ts/cpp"
   # 兼容两种 SDK 产物布局：老版本 cpp/build/，新版本 cpp/target/build/
+  # 注意：必须"先删后拷"覆盖 —— cp -n 不会替换已有文件/软链，会导致 include/lib 半新半旧
   for cpp_out in "$cpp/build" "$cpp/target/build"; do
-    [ -d "$cpp_out/include" ] && { rm -rf include/common include/table include/tree 2>/dev/null; cp -rn "$cpp_out/include/"* include/ 2>/dev/null; }
-    [ -d "$cpp_out/lib" ]     && { cp -rn "$cpp_out/lib/"* lib/ 2>/dev/null; }
+    if [ -d "$cpp_out/include" ]; then
+      for entry in "$cpp_out"/include/*; do
+        [ -e "$entry" ] || continue
+        name=$(basename "$entry")
+        case "$name" in ""|*/*) continue;; esac
+        rm -rf "include/$name"
+        cp -a "$entry" include/
+      done
+    fi
+    if [ -d "$cpp_out/lib" ]; then
+      rm -f lib/libtsfile.so lib/libtsfile.so.* 2>/dev/null
+      for entry in "$cpp_out"/lib/*; do
+        [ -e "$entry" ] || continue
+        cp -af "$entry" lib/
+      done
+      # 清理软链未引用的旧版本动态库
+      cur=$(basename "$(readlink -f lib/libtsfile.so 2>/dev/null)" 2>/dev/null || true)
+      if [ -n "$cur" ]; then
+        for stale in lib/libtsfile.so.*; do
+          [ -e "$stale" ] || continue
+          [ "$(basename "$stale")" = "$cur" ] || rm -f "$stale"
+        done
+      fi
+    fi
   done
 
   # 4. CMake + Make

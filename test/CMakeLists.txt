@@ -10,6 +10,8 @@ ${CMAKE_SOURCE_DIR}/test/tree/test_tree_writer.cpp
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_query_by_row.cpp
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_get_timeseries_metadata.cpp
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_restorable_writer.cpp
+# 文件后端 / mmap 读后端用例（RN-144）
+${CMAKE_SOURCE_DIR}/test/other/test_file_read_backend.cpp
 # 测试覆盖率的源文件
 ${CMAKE_SOURCE_DIR}/include
 )
