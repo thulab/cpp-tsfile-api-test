@@ -149,6 +149,7 @@ class RestorableTsFileWriterTest : public ::testing::Test {
 // 验证：空文件应该被视为 crashed 状态，可以写入
 // -----------------------------------------------------------------------------
 
+// 用例 CPP-TABLE-052：打开空文件
 TEST_F(RestorableTsFileWriterTest, OpenEmptyFile) {
     RestorableTsFileIOWriter writer;
     ASSERT_EQ(writer.open(file_name_, true), E_OK);
@@ -163,6 +164,7 @@ TEST_F(RestorableTsFileWriterTest, OpenEmptyFile) {
 // 测试用例 2：打开非法 Magic 文件
 // 验证：Magic 字符串不匹配的文件应该返回错误
 // -----------------------------------------------------------------------------
+// 用例 CPP-TABLE-053：打开魔数错误文件
 
 TEST_F(RestorableTsFileWriterTest, OpenBadMagicFile) {
     std::ofstream f(file_name_);
@@ -178,6 +180,7 @@ TEST_F(RestorableTsFileWriterTest, OpenBadMagicFile) {
 // -----------------------------------------------------------------------------
 // 测试用例 3：打开完整文件
 // 验证：完整的 TsFile 不应该被标记为 crashed，不能继续写入
+// 用例 CPP-TABLE-054：打开完整文件
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileWriterTest, OpenCompleteFile) {
@@ -205,6 +208,7 @@ TEST_F(RestorableTsFileWriterTest, OpenCompleteFile) {
 
 // -----------------------------------------------------------------------------
 // 测试用例 4：打开截断文件
+// 用例 CPP-TABLE-055：打开截断文件
 // 验证：尾部损坏的文件应该被恢复，截断到安全位置
 // -----------------------------------------------------------------------------
 
@@ -235,6 +239,7 @@ TEST_F(RestorableTsFileWriterTest, OpenTruncatedFile) {
 }
 
 // -----------------------------------------------------------------------------
+// 用例 CPP-TABLE-056：打开仅含头部文件
 // 测试用例 5：打开仅有 Header 的文件
 // 验证：只包含 Magic String 和 Version 的文件应该可以恢复
 // -----------------------------------------------------------------------------
@@ -258,6 +263,7 @@ TEST_F(RestorableTsFileWriterTest, OpenFileWithOnlyHeader) {
     writer.close();
 }
 
+// 用例 CPP-TABLE-057：截断恢复并提供写入器
 // -----------------------------------------------------------------------------
 // 测试用例 6：恢复后继续使用 TsFileWriter 写入
 // 验证：损坏文件恢复后可以继续使用 TsFileWriter 写入数据
@@ -294,6 +300,7 @@ TEST_F(RestorableTsFileWriterTest, TruncateRecoversAndProvidesWriter) {
     tw2.close();
     rw.close();
 }
+// 用例 CPP-TABLE-058：树模型多段设备恢复写入
 
 // -----------------------------------------------------------------------------
 // 测试用例 7：多层设备名恢复与写入
@@ -332,6 +339,7 @@ TEST_F(RestorableTsFileWriterTest, TreeModelMultiSegmentDeviceRecoverAndWrite) {
     ASSERT_EQ(reader.get_all_device_ids().size(), 1u);
     ASSERT_EQ(CountTreeReaderRows(reader, {"s1"}), 2);
     reader.close();
+// 用例 CPP-TREE-050：树写入器多设备恢复写入
 }
 
 // -----------------------------------------------------------------------------
@@ -450,6 +458,7 @@ TEST_F(RestorableTsFileWriterTest, MultiDeviceRecoverAndWriteWithTreeWriter) {
     EXPECT_EQ(row_count, row_num);
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TABLE-059：对齐时序恢复写入
 }
 
 // -----------------------------------------------------------------------------
@@ -458,7 +467,6 @@ TEST_F(RestorableTsFileWriterTest, MultiDeviceRecoverAndWriteWithTreeWriter) {
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWrite) {
-    GTEST_SKIP() << "TODO: 待修复";
     // 1. 创建文件并写入数据
     TsFileWriter tw;
     ASSERT_EQ(tw.open(file_name_, GetWriteCreateFlags(), 0666), E_OK);
@@ -592,6 +600,7 @@ TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWrite) {
         cout << endl;
         row_count++;
     }
+    // 用例 CPP-TABLE-060：对齐时序恢复写空值
     ASSERT_EQ(reader.close(), E_OK);
 }
 
@@ -601,7 +610,6 @@ TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWrite) {
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWriteNullValue) {
-    GTEST_SKIP() << "TODO: 待修复";
     // 1. 创建文件并写入数据
     TsFileWriter tw;
     ASSERT_EQ(tw.open(file_name_, GetWriteCreateFlags(), 0666), E_OK);
@@ -734,6 +742,7 @@ TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWriteNullValue) {
         }
         cout << endl;
         row_count++;
+    // 用例 CPP-TABLE-061：恢复文件状态校验
     }
     ASSERT_EQ(reader.close(), E_OK);
 }
@@ -767,6 +776,7 @@ TEST_F(RestorableTsFileWriterTest, RecoveredFileStateVerification) {
     EXPECT_EQ(rw.get_file_path(), file_name_);
 
     // 验证截断位置有效
+    // 用例 CPP-TABLE-062：不同损坏级别
     EXPECT_GE(rw.get_truncated_size(), MAGIC_STRING_TSFILE_LEN + 1);
 
     rw.close();
@@ -810,6 +820,7 @@ TEST_F(RestorableTsFileWriterTest, DifferentCorruptionLevels) {
         EXPECT_TRUE(rw.has_crashed());
         EXPECT_LE(rw.get_truncated_size(), original_size);
         rw.close();
+// 用例 CPP-TABLE-063：恢复写入数据可读取
 
         // 清理测试文件
         remove(test_file.c_str());

@@ -13,8 +13,8 @@ ${CMAKE_SOURCE_DIR}/test/tree/test_tree_restorable_writer.cpp
 # 测试覆盖率的源文件
 ${CMAKE_SOURCE_DIR}/include
 )
-target_link_libraries(main tsfile "${CMAKE_SOURCE_DIR}/lib/libgtest.a")
+target_link_libraries(main tsfile pthread antlr4-runtime lzokay LZ4 snappy z "${CMAKE_SOURCE_DIR}/lib/libgtest.a")
 
 # # 测试单个独立文件（自身带main函数，若不带main函数，且符合gtest格式，则可以添加到多文件测试目录中）
 # add_executable(main ${CMAKE_SOURCE_DIR}/test/other/tsfile_table_writer_and_read.cpp)
-# target_link_libraries(main tsfile "${CMAKE_SOURCE_DIR}/lib/libgtest.a")
+# target_link_libraries(main tsfile pthread antlr4-runtime lzokay LZ4 snappy z "${CMAKE_SOURCE_DIR}/lib/libgtest.a")

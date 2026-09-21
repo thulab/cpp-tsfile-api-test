@@ -248,6 +248,7 @@ class RestorableTsFileTableWriterTest : public ::testing::Test {
 // 验证：空文件应该被视为 crashed 状态，可以写入
 // -----------------------------------------------------------------------------
 
+// 用例 CPP-TABLE-044：打开空文件
 TEST_F(RestorableTsFileTableWriterTest, OpenEmptyFile) {
     RestorableTsFileIOWriter writer;
     ASSERT_EQ(writer.open(file_name_, true), E_OK);
@@ -262,6 +263,7 @@ TEST_F(RestorableTsFileTableWriterTest, OpenEmptyFile) {
 // 测试用例 2：打开非法 Magic 文件（表模型）
 // 验证：Magic 字符串不匹配的文件应该返回错误
 // -----------------------------------------------------------------------------
+// 用例 CPP-TABLE-045：打开魔数错误文件
 
 TEST_F(RestorableTsFileTableWriterTest, OpenBadMagicFile) {
     std::ofstream f(file_name_);
@@ -277,6 +279,7 @@ TEST_F(RestorableTsFileTableWriterTest, OpenBadMagicFile) {
 // -----------------------------------------------------------------------------
 // 测试用例 3：打开完整文件（表模型）
 // 验证：完整的 TsFile 不应该被标记为 crashed，不能继续写入
+// 用例 CPP-TABLE-046：打开完整文件
 // -----------------------------------------------------------------------------
 
 TEST_F(RestorableTsFileTableWriterTest, OpenCompleteFile) {
@@ -313,6 +316,7 @@ TEST_F(RestorableTsFileTableWriterTest, OpenCompleteFile) {
 
 // -----------------------------------------------------------------------------
 // 测试用例 4：打开截断文件（表模型）
+// 用例 CPP-TABLE-047：打开截断文件
 // 验证：尾部损坏的文件应该被恢复，截断到安全位置
 // -----------------------------------------------------------------------------
 
@@ -353,6 +357,7 @@ TEST_F(RestorableTsFileTableWriterTest, OpenTruncatedFile) {
     writer.close();
 }
 
+// 用例 CPP-TABLE-048：表写入器重复写入
 // -----------------------------------------------------------------------------
 // 测试用例 5：恢复后继续使用 TsFileTableWriter 写入重复数据
 // -----------------------------------------------------------------------------
@@ -484,6 +489,7 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterRepeatedWrite) {
     ASSERT_EQ(query_data(file_name_, table_name, {"__level1", "__level2", "__level3","f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"}, 0, 100), E_OK);
 }
 
+// 用例 CPP-TABLE-049：表写入器写空值
 // -----------------------------------------------------------------------------
 // 测试用例 6：恢复后继续使用 TsFileTableWriter 写入空值数据
 // 验证点：恢复前后写入TAG列全为空值
@@ -599,6 +605,7 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues) {
     // 5. 使用query读取数据
     ASSERT_EQ(query_data(file_name_, table_name, {"__level1", "__level2", "__level3","f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"}, 0, 100), E_OK);
 }
+// 用例 CPP-TABLE-050：表写入器写空值2
 
 // -----------------------------------------------------------------------------
 // 测试用例 7：恢复后继续使用 TsFileTableWriter 写入空值数据
@@ -699,6 +706,7 @@ TEST_F(RestorableTsFileTableWriterTest, TableWriterWriteNullValues2) {
     ASSERT_EQ(get_metadata(file_name_), E_OK);
     // 5. 使用query读取数据
     ASSERT_EQ(query_data(file_name_, table_name, {"__level1", "__level2", "__level3","f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"}, 0, 100), E_OK);
+// 用例 CPP-TABLE-051：恢复后写空表
 }
 
 // -----------------------------------------------------------------------------

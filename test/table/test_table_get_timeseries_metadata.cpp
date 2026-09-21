@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include "fs_compat.h"
 #include <memory>
 #include <limits>
 #include <cstring>
@@ -35,23 +35,23 @@ void init_table_metadata_file_path() {
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
     std::string executable_path = std::string(result, (count > 0) ? count : 0);
-    std::filesystem::path path_obj(executable_path);
+    fs_compat::path path_obj(executable_path);
     std::string exec_path = path_obj.parent_path().string();
-    std::filesystem::path root_path(exec_path);
+    fs_compat::path root_path(exec_path);
 
-    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+    while (!root_path.empty() && !fs_compat::exists(root_path / "data")) {
         root_path = root_path.parent_path();
     }
 
     if (!root_path.empty()) {
-        std::filesystem::path directory_path = root_path / "data" / "tsfile";
-        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+        fs_compat::path directory_path = root_path / "data" / "tsfile";
+        if (!fs_compat::exists(directory_path) || !fs_compat::is_directory(directory_path)) {
             cerr << "Directory does not exist: " << directory_path << endl;
         }
-        std::filesystem::path file_path_ = directory_path / test_table_metadata_file_path;
+        fs_compat::path file_path_ = directory_path / "test_table_get_timeseries_metadata.tsfile";
 
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
-            std::filesystem::remove(file_path_);
+        if (fs_compat::exists(file_path_) && fs_compat::is_regular_file(file_path_)) {
+            fs_compat::remove(file_path_);
         }
         test_table_metadata_file_path = file_path_.string();
     } else {
@@ -358,6 +358,7 @@ int write_multi_device_table_data_metadata(
 /**
  * @brief 测试 1：测试 get_all_table_schemas 获取所有表 schema
  */
+// 用例 CPP-TABLE-032：获取全部表结构
 TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetAllTableSchemas_Basic) {
     // 1. 创建数据 - 创建一个表
     string table_name1 = "Table1";
@@ -394,6 +395,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetAllTableSchemas_Basic) {
 
 /**
  * @brief 测试 2：测试 get_table_schema 获取指定表 schema
+ // 用例 CPP-TABLE-033：获取指定表结构
  */
 TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTableSchema_SpecifiedTable) {
     // 1. 创建数据
@@ -425,6 +427,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTableSchema_SpecifiedTable) 
 }
 
 /**
+ // 用例 CPP-TABLE-034：获取不存在表结构
  * @brief 测试 3：测试 get_table_schema 获取不存在的表（应返回 null）
  */
 TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTableSchema_NonExistentTable) {
@@ -450,6 +453,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTableSchema_NonExistentTable
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+// 用例 CPP-TABLE-035：获取全部设备
 /**
  * @brief 测试 4：测试 get_table_schema 获取表 schema 中的设备 ID（表模型不支持直接获取所有设备）
  */
@@ -496,6 +500,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetAllDevices_Basic) {
 
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TABLE-036：指定设备时序元数据
 
 /**
  * @brief 测试 5：测试 get_timeseries_metadata 获取指定设备的测点元数据
@@ -575,6 +580,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_Specified
     ASSERT_GE(metadata.size(), 1) << "Expected at least 1 devices, actual " << metadata.size();
 
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TABLE-037：全部设备时序元数据
 }
 
 /**
@@ -627,6 +633,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_AllDevice
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+// 用例 CPP-TABLE-038：时序元数据统计信息
 /**
  * @brief 测试 7：测试 get_timeseries_metadata 返回统计信息（count, start_time, end_time）
  *
@@ -669,6 +676,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_Statistic
         }
     }
     ASSERT_TRUE(found_valid_statistic) << "No valid statistic found";
+// 用例 CPP-TABLE-039：时序元数据单行统计
 
     ASSERT_EQ(reader.close(), E_OK);
 }
@@ -710,6 +718,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_SingleRow
     }
 
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TABLE-040：指定设备时序元数据统计
 }
 
 /**
@@ -763,6 +772,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_Statistic
         const auto& ts = timeseries_list[0];
         EXPECT_EQ(ts->get_statistic()->count_, row_count);
         EXPECT_EQ(ts->get_statistic()->start_time_, 0);
+        // 用例 CPP-TABLE-041：不存在设备时序元数据
         EXPECT_EQ(ts->get_statistic()->end_time_, (row_count - 1));
     }
 
@@ -807,6 +817,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_NonExiste
     vector<shared_ptr<IDeviceID>> device_ids = {non_existent_device};
     DeviceTimeseriesMetadataMap metadata = reader.get_timeseries_metadata(device_ids);
 
+    // 用例 CPP-TABLE-042：空设备列表时序元数据
     // 4. 验证结果：不存在的设备不会返回到 map 中
     ASSERT_EQ(metadata.size(), 0);
     ASSERT_EQ(metadata.count(non_existent_device), 0);
@@ -852,6 +863,7 @@ TEST_F(TsFileTableGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_EmptyDevi
     DeviceTimeseriesMetadataMap metadata = reader.get_timeseries_metadata(empty_device_ids);
 
     // 4. 验证结果
+    // 用例 CPP-TABLE-043：多数据类型时序元数据统计
     ASSERT_EQ(metadata.size(), 0);
 
     ASSERT_EQ(reader.close(), E_OK);

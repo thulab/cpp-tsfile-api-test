@@ -21,7 +21,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include "fs_compat.h"
 #include <memory>
 #include <limits>
 #include <cstring>
@@ -51,23 +51,23 @@ void init_file_path_table_query() {
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
     std::string executable_path = std::string(result, (count > 0) ? count : 0);
-    std::filesystem::path path_obj(executable_path);
+    fs_compat::path path_obj(executable_path);
     std::string exec_path = path_obj.parent_path().string();
-    std::filesystem::path root_path(exec_path);
+    fs_compat::path root_path(exec_path);
 
-    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+    while (!root_path.empty() && !fs_compat::exists(root_path / "data")) {
         root_path = root_path.parent_path();
     }
 
     if (!root_path.empty()) {
-        std::filesystem::path directory_path = root_path / "data" / "tsfile";
-        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+        fs_compat::path directory_path = root_path / "data" / "tsfile";
+        if (!fs_compat::exists(directory_path) || !fs_compat::is_directory(directory_path)) {
             cerr << "Directory does not exist: " << directory_path << endl;
         }
-        std::filesystem::path file_path_ = directory_path / test_table_query_by_row_file_path;
+        fs_compat::path file_path_ = directory_path / "test_table_query_by_row.tsfile";
 
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
-            std::filesystem::remove(file_path_);
+        if (fs_compat::exists(file_path_) && fs_compat::is_regular_file(file_path_)) {
+            fs_compat::remove(file_path_);
         }
         test_table_query_by_row_file_path = file_path_.string();
     } else {
@@ -106,8 +106,8 @@ class TsFileTableQueryByRowTest : public ::testing::Test {
 
     void TearDown() override {
         // 清理测试文件
-        if (std::filesystem::exists(test_table_query_by_row_file_path)) {
-            std::filesystem::remove(test_table_query_by_row_file_path);
+        if (fs_compat::exists(test_table_query_by_row_file_path)) {
+            fs_compat::remove(test_table_query_by_row_file_path);
         }
         libtsfile_destroy();
     }
@@ -239,6 +239,7 @@ int write_simple_table_data(const string& table_name, int row_count, string& fil
 /**
  * @brief 测试 1：表名 - 小写英文
  */
+// 用例 CPP-TABLE-003：表名小写查询
 TEST_F(TsFileTableQueryByRowTest, TestTableName_Lowercase) {
     string table_name = "table1";
     int total_rows = 50;
@@ -266,14 +267,15 @@ TEST_F(TsFileTableQueryByRowTest, TestTableName_Lowercase) {
  * 但 TsFileTableWriter::write_table 比较时使用的是原始表名，
  * 导致大写表名无法正确写入。这是源码问题。
  * 本测试使用小写表名来验证查询功能正常。
+ // 用例 CPP-TABLE-004：表名大写查询
  */
 TEST_F(TsFileTableQueryByRowTest, TestTableName_Uppercase) {
     string table_name = "table1";  // 源码限制：表名内部会被转换为小写
     int total_rows = 50;
 
     // 确保文件已清理
-    if (std::filesystem::exists(test_table_query_by_row_file_path)) {
-        std::filesystem::remove(test_table_query_by_row_file_path);
+    if (fs_compat::exists(test_table_query_by_row_file_path)) {
+        fs_compat::remove(test_table_query_by_row_file_path);
     }
 
     // 使用小写列名创建表
@@ -299,6 +301,7 @@ TEST_F(TsFileTableQueryByRowTest, TestTableName_Uppercase) {
 }
 
 /**
+ // 用例 CPP-TABLE-005：表名含数字查询
  * @brief 测试 3：表名 - 包含数字
  */
 TEST_F(TsFileTableQueryByRowTest, TestTableName_WithNumbers) {
@@ -322,6 +325,7 @@ TEST_F(TsFileTableQueryByRowTest, TestTableName_WithNumbers) {
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+// 用例 CPP-TABLE-006：表名含下划线查询
 /**
  * @brief 测试 4：表名 - 包含下划线
  */
@@ -345,6 +349,7 @@ TEST_F(TsFileTableQueryByRowTest, TestTableName_WithUnderscore) {
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TABLE-007：表名中文查询
 
 /**
  * @brief 测试 5：表名 - 中文字符
@@ -368,6 +373,7 @@ TEST_F(TsFileTableQueryByRowTest, TestTableName_Chinese) {
     ASSERT_EQ(row_count, total_rows);
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TABLE-008：表名特殊字符查询
 }
 
 /**
@@ -393,6 +399,7 @@ TEST_F(TsFileTableQueryByRowTest, TestTableName_SpecialChars) {
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TABLE-009：单列存在查询
 
 /** --------------------------------- 列名测试 - 单列/多列 --------------------------------- **/
 
@@ -416,6 +423,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumn_Single_Existing) {
         row_count++;
     }
     ASSERT_EQ(row_count, total_rows);
+    // 用例 CPP-TABLE-010：单列不存在查询
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
@@ -433,6 +441,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumn_Single_NotExisting) {
     ResultSet* result_set = nullptr;
     vector<string> columns = {"nonexistent_column"};
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_COLUMN_NOT_EXIST);
+// 用例 CPP-TABLE-011：多列全存在查询
 
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
@@ -456,6 +465,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumn_Multi_AllExisting) {
     bool has_next = false;
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
+    // 用例 CPP-TABLE-012：多列部分存在查询
     }
     ASSERT_EQ(row_count, total_rows);
     reader.destroy_query_data_set(result_set);
@@ -475,6 +485,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumn_Multi_PartialExisting) {
     ResultSet* result_set = nullptr;
     vector<string> columns = {"tag1", "nonexistent"};
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_COLUMN_NOT_EXIST);
+// 用例 CPP-TABLE-013：Tag和Field列类型
 
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
@@ -498,6 +509,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnType_TagAndField) {
 
     int row_count = 0;
     bool has_next = false;
+    // 用例 CPP-TABLE-014：仅Tag列类型
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
     }
@@ -510,7 +522,6 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnType_TagAndField) {
  * @brief 测试 12：列类型 - 只有 TAG 列
  */
 TEST_F(TsFileTableQueryByRowTest, TestColumnType_OnlyTag) {
-    GTEST_SKIP() << "预期可以只查询TAG列，实际查询输出空";
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -522,6 +533,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnType_OnlyTag) {
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_OK);
 
     int row_count = 0;
+    // 用例 CPP-TABLE-015：仅Field列类型
     bool has_next = false;
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
@@ -547,6 +559,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnType_OnlyField) {
 
     int row_count = 0;
     bool has_next = false;
+    // 用例 CPP-TABLE-016：列名小写查询
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
     }
@@ -570,6 +583,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnName_Lowercase) {
     ResultSet* result_set = nullptr;
     vector<string> columns = {"tag1", "field1"};
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_OK);
+// 用例 CPP-TABLE-017：列名大写查询
 
     int row_count = 0;
     bool has_next = false;
@@ -597,6 +611,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnName_Uppercase) {
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
     ResultSet* result_set = nullptr;
     vector<string> columns = {"tag1", "field1"};  // 查询时使用小写（内部会转换）
+    // 用例 CPP-TABLE-018：列名含数字查询
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_OK);
 
     int row_count = 0;
@@ -624,6 +639,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnName_WithNumbers) {
     TsFileReader reader;
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
     ResultSet* result_set = nullptr;
+    // 用例 CPP-TABLE-019：列名含下划线查询
     vector<string> columns = {"col1", "col2"};
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_OK);
 
@@ -651,6 +667,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnName_WithUnderscore) {
 
     TsFileReader reader;
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
+    // 用例 CPP-TABLE-020：列名中文查询
     ResultSet* result_set = nullptr;
     vector<string> columns = {"col_1", "col_2"};
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_OK);
@@ -678,6 +695,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnName_Chinese) {
     ASSERT_EQ(write_table_data(table_name, column_names, data_types, column_categories, total_rows, test_table_query_by_row_file_path), E_OK);
 
     TsFileReader reader;
+    // 用例 CPP-TABLE-021：列名特殊字符查询
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
     ResultSet* result_set = nullptr;
     vector<string> columns = {"标签", "字段"};
@@ -707,6 +725,7 @@ TEST_F(TsFileTableQueryByRowTest, TestColumnName_SpecialChars) {
 
     TsFileReader reader;
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
+    // 用例 CPP-TABLE-022：偏移为负
     ResultSet* result_set = nullptr;
     vector<string> columns = {"col_1", "col_2"};
     ASSERT_EQ(reader.queryByRow(table_name, columns, 0, -1, result_set), E_OK);
@@ -730,6 +749,7 @@ TEST_F(TsFileTableQueryByRowTest, TestOffset_Negative) {
     string table_name = "t1";
     int total_rows = 50;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
+// 用例 CPP-TABLE-023：偏移有效
 
     TsFileReader reader;
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
@@ -753,6 +773,7 @@ TEST_F(TsFileTableQueryByRowTest, TestOffset_Negative) {
 TEST_F(TsFileTableQueryByRowTest, TestOffset_Valid) {
     string table_name = "t1";
     int total_rows = 100;
+    // 用例 CPP-TABLE-024：偏移超总量
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
 
     TsFileReader reader;
@@ -778,6 +799,7 @@ TEST_F(TsFileTableQueryByRowTest, TestOffset_ExceedTotal) {
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
+// 用例 CPP-TABLE-025：限制为负
 
     TsFileReader reader;
     ASSERT_EQ(reader.open(test_table_query_by_row_file_path), E_OK);
@@ -801,6 +823,7 @@ TEST_F(TsFileTableQueryByRowTest, TestOffset_ExceedTotal) {
  * @brief 测试 23：limit - 小于 0（代表无限制）
  */
 TEST_F(TsFileTableQueryByRowTest, TestLimit_Negative) {
+    // 用例 CPP-TABLE-026：限制有效
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -824,6 +847,7 @@ TEST_F(TsFileTableQueryByRowTest, TestLimit_Negative) {
 /**
  * @brief 测试 24：limit - 大于等于 0，不超过实际行数
  */
+// 用例 CPP-TABLE-027：限制超总量
 TEST_F(TsFileTableQueryByRowTest, TestLimit_Valid) {
     string table_name = "t1";
     int total_rows = 100;
@@ -849,6 +873,7 @@ TEST_F(TsFileTableQueryByRowTest, TestLimit_Valid) {
  * @brief 测试 25：limit - 超过实际行数
  */
 TEST_F(TsFileTableQueryByRowTest, TestLimit_ExceedTotal) {
+    // 用例 CPP-TABLE-028：结果集为空
     string table_name = "t1";
     int total_rows = 100;
     ASSERT_EQ(write_simple_table_data(table_name, total_rows, test_table_query_by_row_file_path), E_OK);
@@ -874,6 +899,7 @@ TEST_F(TsFileTableQueryByRowTest, TestLimit_ExceedTotal) {
 /**
  * @brief 测试 26：result_set - 空的结果集
  */
+// 用例 CPP-TABLE-029：偏移与限制组合有效
 TEST_F(TsFileTableQueryByRowTest, TestResultSet_Empty) {
     string table_name = "t1";
     int total_rows = 20;
@@ -897,6 +923,7 @@ TEST_F(TsFileTableQueryByRowTest, TestResultSet_Empty) {
 
 /** --------------------------------- 组合测试 --------------------------------- **/
 
+// 用例 CPP-TABLE-030：偏移与限制组合超限
 /**
  * @brief 测试 27：offset 和 limit 组合 - offset + limit 等于实际行数
  */
@@ -920,6 +947,7 @@ TEST_F(TsFileTableQueryByRowTest, TestOffsetLimit_Combined_Valid) {
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TABLE-031：偏移与限制组合限制为零
 
 /**
  * @brief 测试 28：offset 和 limit 组合 - offset + limit 超过实际行数

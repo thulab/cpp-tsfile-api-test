@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include "fs_compat.h"
 #include <memory>
 #include <limits>
 #include <cstring>
@@ -36,23 +36,23 @@ void init_file_path() {
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
     std::string executable_path = std::string(result, (count > 0) ? count : 0);
-    std::filesystem::path path_obj(executable_path);
+    fs_compat::path path_obj(executable_path);
     std::string exec_path = path_obj.parent_path().string();
-    std::filesystem::path root_path(exec_path);
+    fs_compat::path root_path(exec_path);
 
-    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+    while (!root_path.empty() && !fs_compat::exists(root_path / "data")) {
         root_path = root_path.parent_path();
     }
 
     if (!root_path.empty()) {
-        std::filesystem::path directory_path = root_path / "data" / "tsfile";
-        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+        fs_compat::path directory_path = root_path / "data" / "tsfile";
+        if (!fs_compat::exists(directory_path) || !fs_compat::is_directory(directory_path)) {
             cerr << "Directory does not exist: " << directory_path << endl;
         }
-        std::filesystem::path file_path_ = directory_path / test_query_by_row_file_path;
+        fs_compat::path file_path_ = directory_path / "test_tree_query_by_row.tsfile";
 
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
-            std::filesystem::remove(file_path_);
+        if (fs_compat::exists(file_path_) && fs_compat::is_regular_file(file_path_)) {
+            fs_compat::remove(file_path_);
         }
         test_query_by_row_file_path = file_path_.string();
     } else {
@@ -543,6 +543,7 @@ int write_multi_device_data(
 /**
  * @brief 测试 1：测试全部数据类型
  */
+// 用例 CPP-TREE-003：全数据类型边界值
 TEST_F(TsFileTreeQueryByRowTest, TestAllDataTypes_WithBoundaryValues) {
     // 1. 创建数据
     string device_id = "root.d1";
@@ -569,6 +570,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestAllDataTypes_WithBoundaryValues) {
 
 /**
  * @brief 测试 2：测试多层设备名
+ // 用例 CPP-TREE-004：多级设备ID
  */
 TEST_F(TsFileTreeQueryByRowTest, TestMultiLevelDeviceId) {
     // 1. 创建数据
@@ -597,6 +599,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMultiLevelDeviceId) {
 
 
 /**
+ // 用例 CPP-TREE-005：单设备ID存在
  * @brief 测试 2：测试单设备 - 存在的设备
  */
 TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Single_Existing) {
@@ -626,6 +629,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Single_Existing) {
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+// 用例 CPP-TREE-006：单设备ID不存在
 /**
  * @brief 测试3：测试单设备 - 不存在的设备
  */
@@ -654,6 +658,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Single_NotExisting) {
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TREE-007：多设备ID全部存在1
 
 /**
  * @brief 测试4：测试多设备 - 全存在的设备，每个设备对应测点一致
@@ -686,6 +691,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_AllExisting1) {
     ASSERT_EQ(row_count, total_rows);
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TREE-008：多设备ID全部存在2
 }
 
 /**
@@ -719,6 +725,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_AllExisting2) {
     ASSERT_EQ(row_count, total_rows);
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TREE-009：多设备ID部分不存在1
 }
 
 
@@ -750,6 +757,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_PartialNotExisting1) {
 
     // 3. 验证结果
     ASSERT_EQ(row_count, total_rows);
+    // 用例 CPP-TREE-010：多设备ID部分不存在2
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
@@ -784,6 +792,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_PartialNotExisting2) {
     }
 
     // 3. 验证结果
+    // 用例 CPP-TREE-011：多设备ID全部不存在
     ASSERT_EQ(row_count, total_rows);
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
@@ -817,6 +826,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Multi_AllNotExisting) {
         row_count++;
     }
 
+    // 用例 CPP-TREE-012：设备ID小写
     // 3. 验证结果
     ASSERT_EQ(row_count, 0);
     reader.destroy_query_data_set(result_set);
@@ -845,6 +855,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Lowercase) {
     bool has_next = false;
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
+    // 用例 CPP-TREE-013：设备ID大写
     }
     // 3. 验证结果
     ASSERT_EQ(row_count, total_rows);
@@ -873,6 +884,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Uppercase) {
     int row_count = 0;
     bool has_next = false;
     while (result_set->next(has_next) == E_OK && has_next) {
+        // 用例 CPP-TREE-014：设备ID含数字
         row_count++;
     }
     // 3. 验证结果
@@ -900,6 +912,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Numbers) {
     ASSERT_EQ(reader.queryByRow(device_ids, measurement_names, 0, -1, result_set), E_OK);
     int row_count = 0;
     bool has_next = false;
+    // 用例 CPP-TREE-015：设备ID含下划线
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
     }
@@ -928,6 +941,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Underscore) {
     ResultSet* result_set = nullptr;
     ASSERT_EQ(reader.queryByRow(device_ids, measurement_names, 0, -1, result_set), E_OK);
     int row_count = 0;
+    // 用例 CPP-TREE-016：设备ID含中文
     bool has_next = false;
     while (result_set->next(has_next) == E_OK && has_next) {
         row_count++;
@@ -956,6 +970,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_UnicodeChinese) {
     vector<string> device_ids = {device_id};
     ResultSet* result_set = nullptr;
     ASSERT_EQ(reader.queryByRow(device_ids, measurement_names, 0, -1, result_set), E_OK);
+    // 用例 CPP-TREE-017：设备ID含空格
     int row_count = 0;
     bool has_next = false;
     while (result_set->next(has_next) == E_OK && has_next) {
@@ -984,6 +999,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestDeviceId_Space) {
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
     vector<string> device_ids = {device_id};
     ResultSet* result_set = nullptr;
+    // 用例 CPP-TREE-018：单测点存在
     ASSERT_EQ(reader.queryByRow(device_ids, measurement_names, 0, -1, result_set), E_OK);
     int row_count = 0;
     bool has_next = false;
@@ -1011,6 +1027,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Single_Existing) {
     TsFileTreeReader reader;
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
     vector<string> device_ids = {device_id};
+    // 用例 CPP-TREE-019：单测点不存在
     ResultSet* result_set = nullptr;
     ASSERT_EQ(reader.queryByRow(device_ids, measurement_names, 0, -1, result_set), E_OK);
     int row_count = 0;
@@ -1038,6 +1055,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Single_NotExisting) {
     // 2. 读取数据
     TsFileTreeReader reader;
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
+    // 用例 CPP-TREE-020：多测点全部存在
     vector<string> device_ids = {device_id};
     ResultSet* result_set = nullptr;
     ASSERT_EQ(reader.queryByRow(device_ids, {"not_exist_measurement"}, 0, -1, result_set), E_OK);
@@ -1065,6 +1083,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Multi_AllExisting) {
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
 
     // 2. 读取数据
+    // 用例 CPP-TREE-021：多测点部分不存在
     TsFileTreeReader reader;
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
     vector<string> device_ids = {device_id};
@@ -1093,6 +1112,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Multi_PartialNotExisting) {
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
 
     // 2. 读取数据
+    // 用例 CPP-TREE-022：多测点全部不存在
     TsFileTreeReader reader;
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
     vector<string> device_ids = {device_id};
@@ -1121,6 +1141,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Multi_AllNotExisting) {
     int total_rows = 100;
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
 
+    // 用例 CPP-TREE-023：测点小写
     // 2. 读取数据
     TsFileTreeReader reader;
     ASSERT_EQ(reader.open(test_query_by_row_file_path), E_OK);
@@ -1149,6 +1170,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Lowercase) {
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
     int total_rows = 100;
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
+// 用例 CPP-TREE-024：测点大写
 
     // 2. 读取数据
     TsFileTreeReader reader;
@@ -1177,6 +1199,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Uppercase) {
                                         "TEXT_COL", "STRING_COL", "BLOB_COL", "DATE_COL", "TIMESTAMP_COL"};
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
     int total_rows = 100;
+    // 用例 CPP-TREE-025：测点含数字
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
 
     // 2. 读取数据
@@ -1205,6 +1228,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Numbers) {
     vector<string> measurement_names = {"`1`", "`2`", "`3`", "`4`", "`5`",
                                         "`6`", "`7`", "`8`", "`9`", "`10`"};
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
+    // 用例 CPP-TREE-026：测点含下划线
     int total_rows = 100;
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
 
@@ -1233,6 +1257,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Underscore) {
     string device_id = "root.d1";
     vector<string> measurement_names = {"_", "__", "___", "____", "_____",
                                         "______", "_______", "________", "_________", "__________"};
+    // 用例 CPP-TREE-027：测点含中文
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
     int total_rows = 100;
     ASSERT_EQ(write_all_types_data(device_id, measurement_names, data_types, total_rows, 0, test_query_by_row_file_path, false), E_OK);
@@ -1261,6 +1286,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_UnicodeChinese) {
     // 1. 创建数据
     string device_id = "root.d1";
     vector<string> measurement_names = {"中文", "中文中文", "中文中文中文", "中文中文中文中文", "中文中文中文中文中文",
+                                        // 用例 CPP-TREE-028：测点含空格
                                         "中文中文中文中文中文中文", "中文中文中文中文中文中文中文", "中文中文中文中文中文中文中文中文", "中文中文中文中文中文中文中文中文中文", "中文中文中文中文中文中文中文中文中文中文"};
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
     int total_rows = 100;
@@ -1289,6 +1315,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_UnicodeChinese) {
 TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Space) {
     // 1. 创建数据
     string device_id = "root.d1";
+    // 用例 CPP-TREE-029：偏移为负
     vector<string> measurement_names = {"` !@#1`", "` !@#2`", "` !@#3`", "` !@#4`", "` !@#5`",
                                         "` !@#6`", "` !@#7`", "` !@#8`", "` !@#9`", "` !@#10`"};
     vector<TSDataType> data_types = {BOOLEAN, INT32, INT64, FLOAT, DOUBLE, TEXT, STRING, BLOB, DATE, TIMESTAMP};
@@ -1317,6 +1344,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestMeasurement_Space) {
  */
 TEST_F(TsFileTreeQueryByRowTest, TestOffset_Negative) {
     // 1. 创建数据
+    // 用例 CPP-TREE-030：偏移有效
     string device_id = "root.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
                                         "text_col", "string_col", "blob_col", "date_col", "timestamp_col"};
@@ -1345,6 +1373,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestOffset_Negative) {
  * @brief 测试26：offset 大于等于 0，不超过实际行数
  */
 TEST_F(TsFileTreeQueryByRowTest, TestOffset_Valid) {
+    // 用例 CPP-TREE-031：偏移超总量
     // 1. 创建数据
     string device_id = "root.d1";
     vector<string> measurement_names = {"bool_col", "int32_col", "int64_col", "float_col", "double_col",
@@ -1373,6 +1402,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestOffset_Valid) {
 /**
  * @brief 测试27：offset 超过实际行数
  */
+// 用例 CPP-TREE-032：限制为负
 TEST_F(TsFileTreeQueryByRowTest, TestOffset_ExceedTotal) {
     // 1. 创建数据
     string device_id = "root.d1";
@@ -1401,6 +1431,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestOffset_ExceedTotal) {
 
 /**
  * @brief 测试28：limit 小于 0（相当于值为-1）
+ // 用例 CPP-TREE-033：限制有效
  */
 TEST_F(TsFileTreeQueryByRowTest, TestLimit_Negative) {
     // 1. 创建数据
@@ -1429,6 +1460,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestLimit_Negative) {
 }
 
 /**
+ // 用例 CPP-TREE-034：限制超总量
  * @brief 测试29：limit 大于等于 0，不超过实际行数
  */
 TEST_F(TsFileTreeQueryByRowTest, TestLimit_Valid) {
@@ -1457,6 +1489,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestLimit_Valid) {
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+// 用例 CPP-TREE-035：限制小于偏移
 /**
  * @brief 测试30：limit 超过实际行数
  */
@@ -1485,6 +1518,7 @@ TEST_F(TsFileTreeQueryByRowTest, TestLimit_ExceedTotal) {
     reader.destroy_query_data_set(result_set);
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TREE-036：结果集为空
 
 /**
  * @brief 测试31：limit 小于 offset

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include "fs_compat.h"
 #include <memory>
 #include <limits>
 #include <cstring>
@@ -37,23 +37,23 @@ void init_metadata_file_path() {
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
     std::string executable_path = std::string(result, (count > 0) ? count : 0);
-    std::filesystem::path path_obj(executable_path);
+    fs_compat::path path_obj(executable_path);
     std::string exec_path = path_obj.parent_path().string();
-    std::filesystem::path root_path(exec_path);
+    fs_compat::path root_path(exec_path);
 
-    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+    while (!root_path.empty() && !fs_compat::exists(root_path / "data")) {
         root_path = root_path.parent_path();
     }
 
     if (!root_path.empty()) {
-        std::filesystem::path directory_path = root_path / "data" / "tsfile";
-        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+        fs_compat::path directory_path = root_path / "data" / "tsfile";
+        if (!fs_compat::exists(directory_path) || !fs_compat::is_directory(directory_path)) {
             cerr << "Directory does not exist: " << directory_path << endl;
         }
-        std::filesystem::path file_path_ = directory_path / test_metadata_file_path;
+        fs_compat::path file_path_ = directory_path / "test_tree_get_timeseries_metadata.tsfile";
 
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
-            std::filesystem::remove(file_path_);
+        if (fs_compat::exists(file_path_) && fs_compat::is_regular_file(file_path_)) {
+            fs_compat::remove(file_path_);
         }
         test_metadata_file_path = file_path_.string();
     } else {
@@ -402,6 +402,7 @@ int write_multi_device_data_metadata(
 /**
  * @brief 测试 1：测试 get_all_device_ids 获取所有设备 ID，设备名包含大小写英文、中文、字符、数字、特殊字符等
  */
+// 用例 CPP-TREE-037：获取全部设备ID
 TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetAllDeviceIds_Basic) {
     // 1. 创建数据
     vector<string> devices = 
@@ -440,6 +441,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetAllDeviceIds_Basic) {
 
 /**
  * @brief 测试 2：测试 get_all_devices 获取所有设备 ID，设备名包含大小写英文、中文、字符、数字、特殊字符等
+ // 用例 CPP-TREE-038：获取全部设备ID形式
  */
 TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetAllDevices_IDeviceIDForm) {
     // 1. 创建数据
@@ -478,6 +480,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetAllDevices_IDeviceIDForm) {
 }
 
 /**
+ // 用例 CPP-TREE-039：指定设备时序元数据1
  * @brief 测试 3：测试 get_timeseries_metadata 获取指定设备的测点元数据（一次一个个设备）
  */
 TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_SpecifiedDevice1) {
@@ -526,6 +529,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_SpecifiedD
     ASSERT_EQ(reader.close(), E_OK);
 }
 
+// 用例 CPP-TREE-040：全部设备时序元数据
 /**
  * @brief 测试 4：测试 get_timeseries_metadata 获取指定设备的测点元数据（一次多个存在的设备，设备都存在）
  */
@@ -583,6 +587,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_AllDevice)
     }
     ASSERT_EQ(reader.close(), E_OK);
 }
+// 用例 CPP-TREE-041：部分设备存在时序元数据
 
 /**
  * @brief 测试 5：测试 get_timeseries_metadata 获取指定设备的测点元数据（一次多个存在的设备，部分设备存在）
@@ -646,6 +651,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_PartialDev
         }
     }
     ASSERT_EQ(reader.close(), E_OK);
+// 用例 CPP-TREE-042：不存在设备时序元数据
 }
 
 /**
@@ -681,6 +687,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_NonExisten
     ASSERT_EQ(metadata.size(), 0);
     ASSERT_EQ(metadata.find(non_existent_device), metadata.end());
 
+    // 用例 CPP-TREE-043：全部设备时序元数据测试
     ASSERT_EQ(reader.close(), E_OK);
 }
 
@@ -736,6 +743,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_AllDevice_
             ASSERT_EQ(ts->get_statistic()->end_time_, row_count - 1) << "统计信息结束时间错误，预期：" << row_count - 1 << " 实际：" << ts->get_statistic()->end_time_ << endl;
         }
     }
+// 用例 CPP-TREE-044：时序元数据统计信息
 
     ASSERT_EQ(reader.close(), E_OK);
 }
@@ -789,6 +797,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_StatisticI
                 << "Device " << device_name << " timeseries "
                 << ts->get_measurement_name().to_std_string() << " end_time mismatch";
         }
+    // 用例 CPP-TREE-045：指定设备时序元数据统计
     }
 
     ASSERT_EQ(reader.close(), E_OK);
@@ -835,6 +844,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_StatisticI
         const auto& ts = timeseries_list[0];
         EXPECT_EQ(ts->get_statistic()->count_, row_count);
         EXPECT_EQ(ts->get_statistic()->start_time_, start_time);
+        // 用例 CPP-TREE-046：时序元数据单行统计
         EXPECT_EQ(ts->get_statistic()->end_time_, end_time);
     }
 
@@ -871,6 +881,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_SingleRowS
         // count = 1
         EXPECT_EQ(ts->get_statistic()->count_, 1);
         // start_time = end_time = 0 (只有一行，时间戳为 0)
+        // 用例 CPP-TREE-047：时序元数据写记录统计
         EXPECT_EQ(ts->get_statistic()->start_time_, 0);
         EXPECT_EQ(ts->get_statistic()->end_time_, 0);
     }
@@ -905,6 +916,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_RecordWrit
     ASSERT_EQ(timeseries_list.size(), 2);
 
     for (const auto& ts : timeseries_list) {
+        // 用例 CPP-TREE-048：时序元数据最大最小统计
         EXPECT_EQ(ts->get_statistic()->count_, row_count);
         EXPECT_EQ(ts->get_statistic()->start_time_, 0);
         EXPECT_EQ(ts->get_statistic()->end_time_, (row_count - 1));
@@ -992,6 +1004,7 @@ TEST_F(TsFileTreeGetTimeseriesMetadataTest, TestGetTimeseriesMetadata_MinMaxStat
     EXPECT_EQ(int32_stat->min_value_, 0);
     EXPECT_EQ(int32_stat->max_value_, 18);
 
+    // 用例 CPP-TREE-049：对齐时序元数据
     // 验证 double_val 的 min/max (需要转换为 DoubleStatistic)
     const DoubleStatistic* double_stat = dynamic_cast<const DoubleStatistic*>(double_ts->get_statistic());
     ASSERT_NE(double_stat, nullptr);

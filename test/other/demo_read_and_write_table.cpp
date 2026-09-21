@@ -19,7 +19,7 @@
 #include <ostream>
 #include <writer/tsfile_table_writer.h>
 #include <string>
-#include <filesystem>
+#include "fs_compat.h"
 
 #define HANDLE_ERROR(err_no)                  \
     do {                                      \

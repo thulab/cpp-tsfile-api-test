@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": ".plm-classification.json",
+  "title": "PLM Test Case Scene Classification Rules",
+  "description": "Defines how test cases from this program are classified into PLM's 3-level scene hierarchy.",
+  "version": "1.0",
+  "program": {
+    "name": "cpp-tsfile-api-test",
+    "language": "Cpp",
+    "automationType": "ts-cpp",
+    "framework": "Google Test 1.14",
+    "caseIdFormat": "SuiteName.TestName (from --gtest_list_tests)",
+    "note": "Binary must be built first (sh start.sh prepare). CASE_ID is SuiteName.methodName."
+  },
+  "hierarchy": {
+    "L1": "Cpp",
+    "L2": {
+      "Table 模型": {
+        "caseIdPattern": "TsFileTable|TsFileWriter",
+        "description": "Cases with CASE_ID starting with TsFileTable or TsFileWriter"
+      },
+      "Tree 模型": {
+        "caseIdPattern": "TsFileTree",
+        "description": "Cases with CASE_ID starting with TsFileTree"
+      }
+    },
+    "L3": {
+      "description": "Interface type classification by CASE_ID keyword matching. Applied in priority order.",
+      "rules": [
+        {
+          "name": "异常/校验",
+          "priority": 1,
+          "keywords": ["exception", "error", "throw", "invalid", "illegal", "null", "empty", "fail", "reject", "missing", "wrong_type", "duplicate", "nonexist", "crash", "raises", "conflict", "inconsistent", "overlap", "stale", "shard", "assert"],
+          "matchField": "caseId",
+          "caseSensitive": false
+        },
+        {
+          "name": "写入接口",
+          "priority": 2,
+          "keywords": ["write", "writer", "tablet", "add_value", "add_column", "insert", "builder", "build"],
+          "matchField": "caseId",
+          "caseSensitive": false
+        },
+        {
+          "name": "查询接口",
+          "priority": 3,
+          "keywords": ["query", "reader", "read", "get_timeseries", "get_table", "get_all", "list_timeseries", "select", "filter", "loc", "iloc", "get_value", "iterator"],
+          "matchField": "caseId",
+          "caseSensitive": false
+        },
+        {
+          "name": "Schema/Metadata",
+          "priority": 4,
+          "keywords": ["schema", "metadata", "enum", "column_type", "column_name", "table_schema", "series_name", "field", "measurement", "timeseries", "timestamp", "column"],
+          "matchField": "caseId",
+          "caseSensitive": false
+        },
+        {
+          "name": "查询接口",
+          "priority": 99,
+          "keywords": [],
+          "matchField": "caseId",
+          "caseSensitive": false,
+          "description": "Default fallback"
+        }
+      ]
+    }
+  },
+  "sceneBinding": {
+    "apiBase": "http://localhost:8083/api/open",
+    "endpoint": "/test-cases/{caseDbId}/scenes/{sceneId}",
+    "auth": "Bearer {pat_token}"
+  }
+}

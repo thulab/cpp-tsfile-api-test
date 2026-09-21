@@ -1,0 +1,680 @@
+{
+ "TsFile-282": {
+  "name": "表写入器基础写入",
+  "nodeId": "TsFileWriterTableTest.TestTsFileTableWriter1",
+  "automationType": "cpp",
+  "plmDescription": "验证表模型写入器支持多种数据类型、多个 TAG/FIELD 列、跨时间分区及多设备数据的写入和读取。"
+ },
+ "TsFile-283": {
+  "name": "表写入器复杂写入",
+  "nodeId": "TsFileWriterTableTest.TestTsFileTableWriter2",
+  "automationType": "cpp",
+  "plmDescription": "验证表模型写入器处理部分空列、TAG 列全空、FIELD 列全空及整行空值时仍能正确写入和查询。"
+ },
+ "TsFile-284": {
+  "name": "表名小写查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestTableName_Lowercase",
+  "automationType": "cpp",
+  "plmDescription": "验证使用全小写表名创建并查询数据。"
+ },
+ "TsFile-285": {
+  "name": "表名大写查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestTableName_Uppercase",
+  "automationType": "cpp",
+  "plmDescription": "验证表名大小写处理（内部规范化为小写）不会影响查询结果。"
+ },
+ "TsFile-286": {
+  "name": "表名含数字查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestTableName_WithNumbers",
+  "automationType": "cpp",
+  "plmDescription": "验证包含数字的表名可正常创建、写入和查询。"
+ },
+ "TsFile-287": {
+  "name": "表名含下划线查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestTableName_WithUnderscore",
+  "automationType": "cpp",
+  "plmDescription": "验证包含下划线的表名可正常创建、写入和查询。"
+ },
+ "TsFile-288": {
+  "name": "表名中文查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestTableName_Chinese",
+  "automationType": "cpp",
+  "plmDescription": "验证包含中文字符的表名可正常创建、写入和查询。"
+ },
+ "TsFile-289": {
+  "name": "表名特殊字符查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestTableName_SpecialChars",
+  "automationType": "cpp",
+  "plmDescription": "验证表名含特殊字符场景的兼容性，确认合法表名可以正常写入和查询。"
+ },
+ "TsFile-290": {
+  "name": "单列存在查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumn_Single_Existing",
+  "automationType": "cpp",
+  "plmDescription": "验证查询单个已存在列时返回全部预期数据行。"
+ },
+ "TsFile-291": {
+  "name": "单列不存在查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumn_Single_NotExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询不存在的单列时返回 E_COLUMN_NOT_EXIST 错误。"
+ },
+ "TsFile-292": {
+  "name": "多列全存在查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumn_Multi_AllExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证同时查询多个已存在列时返回完整结果。"
+ },
+ "TsFile-293": {
+  "name": "多列部分存在查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumn_Multi_PartialExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询列列表中部分列不存在时返回 E_COLUMN_NOT_EXIST 错误。"
+ },
+ "TsFile-294": {
+  "name": "Tag和Field列类型",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnType_TagAndField",
+  "automationType": "cpp",
+  "plmDescription": "验证同时查询 TAG 列和 FIELD 列时能够返回完整数据。"
+ },
+ "TsFile-295": {
+  "name": "仅Tag列类型",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnType_OnlyTag",
+  "automationType": "cpp",
+  "plmDescription": "验证仅查询 TAG 列的兼容性；当前实现限制下该用例暂时跳过。"
+ },
+ "TsFile-296": {
+  "name": "仅Field列类型",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnType_OnlyField",
+  "automationType": "cpp",
+  "plmDescription": "验证仅查询 FIELD 列时能够正常返回数据。"
+ },
+ "TsFile-297": {
+  "name": "列名小写查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnName_Lowercase",
+  "automationType": "cpp",
+  "plmDescription": "验证列名使用小写英文时可以正常写入和查询。"
+ },
+ "TsFile-298": {
+  "name": "列名大写查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnName_Uppercase",
+  "automationType": "cpp",
+  "plmDescription": "验证列名使用大写英文时按规则规范化后仍可正常查询。"
+ },
+ "TsFile-299": {
+  "name": "列名含数字查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnName_WithNumbers",
+  "automationType": "cpp",
+  "plmDescription": "验证包含数字的列名可以正常写入和查询。"
+ },
+ "TsFile-300": {
+  "name": "列名含下划线查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnName_WithUnderscore",
+  "automationType": "cpp",
+  "plmDescription": "验证包含下划线的列名可以正常写入和查询。"
+ },
+ "TsFile-301": {
+  "name": "列名中文查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnName_Chinese",
+  "automationType": "cpp",
+  "plmDescription": "验证包含中文字符的列名可以正常写入和查询。"
+ },
+ "TsFile-302": {
+  "name": "列名特殊字符查询",
+  "nodeId": "TsFileTableQueryByRowTest.TestColumnName_SpecialChars",
+  "automationType": "cpp",
+  "plmDescription": "验证列名含特殊字符场景的处理行为。"
+ },
+ "TsFile-303": {
+  "name": "偏移为负",
+  "nodeId": "TsFileTableQueryByRowTest.TestOffset_Negative",
+  "automationType": "cpp",
+  "plmDescription": "验证 offset 为负数时按当前实现从起始位置查询并返回全部数据。"
+ },
+ "TsFile-361": {
+  "name": "偏移为负",
+  "nodeId": "TsFileTreeQueryByRowTest.TestOffset_Negative",
+  "automationType": "cpp",
+  "plmDescription": "验证 offset 为负数时按 0 处理并返回全部数据。"
+ },
+ "TsFile-304": {
+  "name": "偏移有效",
+  "nodeId": "TsFileTableQueryByRowTest.TestOffset_Valid",
+  "automationType": "cpp",
+  "plmDescription": "验证合法 offset 从指定行开始查询，并返回剩余数据行。"
+ },
+ "TsFile-362": {
+  "name": "偏移有效",
+  "nodeId": "TsFileTreeQueryByRowTest.TestOffset_Valid",
+  "automationType": "cpp",
+  "plmDescription": "验证合法 offset 从指定行开始查询，并返回剩余数据行。"
+ },
+ "TsFile-305": {
+  "name": "偏移超总量",
+  "nodeId": "TsFileTableQueryByRowTest.TestOffset_ExceedTotal",
+  "automationType": "cpp",
+  "plmDescription": "验证 offset 超过总行数时返回空结果集。"
+ },
+ "TsFile-363": {
+  "name": "偏移超总量",
+  "nodeId": "TsFileTreeQueryByRowTest.TestOffset_ExceedTotal",
+  "automationType": "cpp",
+  "plmDescription": "验证 offset 超过总行数时返回空结果集。"
+ },
+ "TsFile-306": {
+  "name": "限制为负",
+  "nodeId": "TsFileTableQueryByRowTest.TestLimit_Negative",
+  "automationType": "cpp",
+  "plmDescription": "验证 limit 为负数时表示不限制返回数量。"
+ },
+ "TsFile-364": {
+  "name": "限制为负",
+  "nodeId": "TsFileTreeQueryByRowTest.TestLimit_Negative",
+  "automationType": "cpp",
+  "plmDescription": "验证 limit 为负数时按 -1 处理，即不限制返回数量。"
+ },
+ "TsFile-307": {
+  "name": "限制有效",
+  "nodeId": "TsFileTableQueryByRowTest.TestLimit_Valid",
+  "automationType": "cpp",
+  "plmDescription": "验证合法 limit 参数能够限制返回行数。"
+ },
+ "TsFile-365": {
+  "name": "限制有效",
+  "nodeId": "TsFileTreeQueryByRowTest.TestLimit_Valid",
+  "automationType": "cpp",
+  "plmDescription": "验证合法 limit 参数能够限制返回行数。"
+ },
+ "TsFile-308": {
+  "name": "限制超总量",
+  "nodeId": "TsFileTableQueryByRowTest.TestLimit_ExceedTotal",
+  "automationType": "cpp",
+  "plmDescription": "验证 limit 大于总行数时返回全部可用数据。"
+ },
+ "TsFile-366": {
+  "name": "限制超总量",
+  "nodeId": "TsFileTreeQueryByRowTest.TestLimit_ExceedTotal",
+  "automationType": "cpp",
+  "plmDescription": "验证 limit 大于总行数时返回全部可用数据。"
+ },
+ "TsFile-309": {
+  "name": "结果集为空",
+  "nodeId": "TsFileTableQueryByRowTest.TestResultSet_Empty",
+  "automationType": "cpp",
+  "plmDescription": "验证查询结果集为空时，ResultSet 可以安全遍历并正确返回无数据。"
+ },
+ "TsFile-368": {
+  "name": "结果集为空",
+  "nodeId": "TsFileTreeQueryByRowTest.TestResultSet_Empty",
+  "automationType": "cpp",
+  "plmDescription": "验证树模型 ResultSet 的遍历行为，确保查询结果可以正常读取。"
+ },
+ "TsFile-310": {
+  "name": "偏移与限制组合有效",
+  "nodeId": "TsFileTableQueryByRowTest.TestOffsetLimit_Combined_Valid",
+  "automationType": "cpp",
+  "plmDescription": "验证 offset 与 limit 之和等于总行数时返回正确的结果范围。"
+ },
+ "TsFile-311": {
+  "name": "偏移与限制组合超限",
+  "nodeId": "TsFileTableQueryByRowTest.TestOffsetLimit_Combined_Exceed",
+  "automationType": "cpp",
+  "plmDescription": "验证 offset 与 limit 之和超过总行数时仅返回剩余数据。"
+ },
+ "TsFile-312": {
+  "name": "偏移与限制组合限制为零",
+  "nodeId": "TsFileTableQueryByRowTest.TestOffsetLimit_Combined_LimitZero",
+  "automationType": "cpp",
+  "plmDescription": "验证 limit 为 0 时返回空结果集。"
+ },
+ "TsFile-313": {
+  "name": "获取全部表结构",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetAllTableSchemas_Basic",
+  "automationType": "cpp",
+  "plmDescription": "验证 get_all_table_schemas 可以获取文件中的全部表结构及列数。"
+ },
+ "TsFile-314": {
+  "name": "获取指定表结构",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTableSchema_SpecifiedTable",
+  "automationType": "cpp",
+  "plmDescription": "验证 get_table_schema 可以获取指定表结构并正确返回列定义。"
+ },
+ "TsFile-315": {
+  "name": "获取不存在表结构",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTableSchema_NonExistentTable",
+  "automationType": "cpp",
+  "plmDescription": "验证查询不存在的表时返回空 schema（null）。"
+ },
+ "TsFile-316": {
+  "name": "获取全部设备",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetAllDevices_Basic",
+  "automationType": "cpp",
+  "plmDescription": "验证表模型读取器获取全部设备 ID 接口的基础行为。"
+ },
+ "TsFile-317": {
+  "name": "指定设备时序元数据",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_SpecifiedDevice",
+  "automationType": "cpp",
+  "plmDescription": "验证按指定设备获取测点元数据、数据类型及统计信息。"
+ },
+ "TsFile-318": {
+  "name": "全部设备时序元数据",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_AllDevices",
+  "automationType": "cpp",
+  "plmDescription": "验证不指定设备时可以获取全部设备的测点元数据。"
+ },
+ "TsFile-372": {
+  "name": "全部设备时序元数据",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_AllDevice",
+  "automationType": "cpp",
+  "plmDescription": "验证一次指定多个已存在设备时，能够获取每个设备的测点元数据。"
+ },
+ "TsFile-319": {
+  "name": "时序元数据统计信息",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_StatisticInfo",
+  "automationType": "cpp",
+  "plmDescription": "验证测点元数据包含 count、start_time、end_time 等统计信息。"
+ },
+ "TsFile-376": {
+  "name": "时序元数据统计信息",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_StatisticInfo",
+  "automationType": "cpp",
+  "plmDescription": "验证树模型测点元数据能够正确返回 count、start_time、end_time 统计信息。"
+ },
+ "TsFile-320": {
+  "name": "时序元数据单行统计",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_SingleRowStatistic",
+  "automationType": "cpp",
+  "plmDescription": "验证单行数据的统计信息 count 为 1 且起止时间一致。"
+ },
+ "TsFile-378": {
+  "name": "时序元数据单行统计",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_SingleRowStatistic",
+  "automationType": "cpp",
+  "plmDescription": "验证单行数据的统计信息 count 为 1 且起止时间均为首个时间戳。"
+ },
+ "TsFile-321": {
+  "name": "指定设备时序元数据统计",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_StatisticInfoForSpecifiedDevices",
+  "automationType": "cpp",
+  "plmDescription": "验证指定设备列表时返回对应测点元数据及正确统计信息。"
+ },
+ "TsFile-377": {
+  "name": "指定设备时序元数据统计",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_StatisticInfoForSpecifiedDevices",
+  "automationType": "cpp",
+  "plmDescription": "验证指定设备列表时能够返回对应测点的正确统计信息。"
+ },
+ "TsFile-322": {
+  "name": "不存在设备时序元数据",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_NonExistentDevice",
+  "automationType": "cpp",
+  "plmDescription": "验证查询不存在设备时返回空元数据，不混入其他设备。"
+ },
+ "TsFile-374": {
+  "name": "不存在设备时序元数据",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_NonExistentDevice",
+  "automationType": "cpp",
+  "plmDescription": "验证查询不存在设备的测点元数据时返回空结果。"
+ },
+ "TsFile-323": {
+  "name": "空设备列表时序元数据",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_EmptyDeviceList",
+  "automationType": "cpp",
+  "plmDescription": "验证传入空设备列表时返回空元数据。"
+ },
+ "TsFile-324": {
+  "name": "多数据类型时序元数据统计",
+  "nodeId": "TsFileTableGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_MultiDataTypeStatistic",
+  "automationType": "cpp",
+  "plmDescription": "验证多种数据类型的测点均能生成正确的统计信息。"
+ },
+ "TsFile-325": {
+  "name": "打开空文件",
+  "nodeId": "RestorableTsFileTableWriterTest.OpenEmptyFile",
+  "automationType": "cpp",
+  "plmDescription": "验证打开空的表模型文件后识别为可恢复、可写状态。"
+ },
+ "TsFile-382": {
+  "name": "可恢复写入器 – 打开空文件",
+  "nodeId": "RestorableTsFileWriterTest.OpenEmptyFile",
+  "automationType": "cpp",
+  "plmDescription": "验证打开空的树模型 TsFile 后识别为可恢复、可写状态。"
+ },
+ "TsFile-326": {
+  "name": "打开魔数错误文件",
+  "nodeId": "RestorableTsFileTableWriterTest.OpenBadMagicFile",
+  "automationType": "cpp",
+  "plmDescription": "验证打开 Magic 字符串损坏的文件时返回不兼容错误。"
+ },
+ "TsFile-383": {
+  "name": "可恢复写入器 – 打开魔数错误文件",
+  "nodeId": "RestorableTsFileWriterTest.OpenBadMagicFile",
+  "automationType": "cpp",
+  "plmDescription": "验证打开 Magic 字符串损坏的树模型文件时返回不兼容错误。"
+ },
+ "TsFile-327": {
+  "name": "打开完整文件",
+  "nodeId": "RestorableTsFileTableWriterTest.OpenCompleteFile",
+  "automationType": "cpp",
+  "plmDescription": "验证完整的表模型 TsFile 被识别为完成状态且不可继续写入。"
+ },
+ "TsFile-384": {
+  "name": "可恢复写入器 – 打开完整文件",
+  "nodeId": "RestorableTsFileWriterTest.OpenCompleteFile",
+  "automationType": "cpp",
+  "plmDescription": "验证完整的树模型 TsFile 被识别为完成状态且不可继续写入。"
+ },
+ "TsFile-328": {
+  "name": "打开截断文件",
+  "nodeId": "RestorableTsFileTableWriterTest.OpenTruncatedFile",
+  "automationType": "cpp",
+  "plmDescription": "验证尾部截断的表模型文件可恢复到安全位置并继续写入。"
+ },
+ "TsFile-385": {
+  "name": "可恢复写入器 – 打开截断文件",
+  "nodeId": "RestorableTsFileWriterTest.OpenTruncatedFile",
+  "automationType": "cpp",
+  "plmDescription": "验证尾部截断的树模型文件可恢复到安全位置并继续写入。"
+ },
+ "TsFile-329": {
+  "name": "表写入器重复写入",
+  "nodeId": "RestorableTsFileTableWriterTest.TableWriterRepeatedWrite",
+  "automationType": "cpp",
+  "plmDescription": "验证文件恢复后可重复写入多批、多类型数据，且元数据和查询结果保持可用。"
+ },
+ "TsFile-330": {
+  "name": "表写入器写空值",
+  "nodeId": "RestorableTsFileTableWriterTest.TableWriterWriteNullValues",
+  "automationType": "cpp",
+  "plmDescription": "验证文件恢复后写入包含空值的数据不会破坏文件及后续查询。"
+ },
+ "TsFile-331": {
+  "name": "表写入器写空值2",
+  "nodeId": "RestorableTsFileTableWriterTest.TableWriterWriteNullValues2",
+  "automationType": "cpp",
+  "plmDescription": "验证文件恢复后再次写入空值数据时，浮点列统计信息仍保持正确。"
+ },
+ "TsFile-332": {
+  "name": "恢复后写空表",
+  "nodeId": "RestorableTsFileTableWriterTest.RecoveredWriteEmptyTablet",
+  "automationType": "cpp",
+  "plmDescription": "验证文件恢复后写入空 Tablet 不会崩溃，并且仍可继续写入正常数据。"
+ },
+ "TsFile-333": {
+  "name": "注册时间序列",
+  "nodeId": "TsFileWriterTreeTest.RegisterTimeSeries1",
+  "automationType": "cpp",
+  "plmDescription": "验证树模型写入器可为设备注册布尔、数值、文本等多种类型的时间序列。"
+ },
+ "TsFile-334": {
+  "name": "写入表",
+  "nodeId": "TsFileWriterTreeTest.WriteTable1",
+  "automationType": "cpp",
+  "plmDescription": "验证树模型 Tablet 写入器可写入多种数据类型的 100 行数据并正确读取。"
+ },
+ "TsFile-335": {
+  "name": "全数据类型边界值",
+  "nodeId": "TsFileTreeQueryByRowTest.TestAllDataTypes_WithBoundaryValues",
+  "automationType": "cpp",
+  "plmDescription": "验证树模型查询支持全部数据类型、边界值及空值场景。"
+ },
+ "TsFile-336": {
+  "name": "多级设备ID",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMultiLevelDeviceId",
+  "automationType": "cpp",
+  "plmDescription": "验证多层设备路径（如 root.db.w1.s1.d1）可以正确写入和查询。"
+ },
+ "TsFile-337": {
+  "name": "单设备ID存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Single_Existing",
+  "automationType": "cpp",
+  "plmDescription": "验证查询单个已存在设备时返回该设备的全部预期数据。"
+ },
+ "TsFile-338": {
+  "name": "单设备ID不存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Single_NotExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询单个不存在设备时返回空结果集。"
+ },
+ "TsFile-339": {
+  "name": "多设备ID全部存在1",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Multi_AllExisting1",
+  "automationType": "cpp",
+  "plmDescription": "验证多个设备全部存在且测点一致时能够返回正确结果。"
+ },
+ "TsFile-340": {
+  "name": "多设备ID全部存在2",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Multi_AllExisting2",
+  "automationType": "cpp",
+  "plmDescription": "验证多个设备全部存在但测点名称不一致时能够按请求返回正确结果。"
+ },
+ "TsFile-341": {
+  "name": "多设备ID部分不存在1",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Multi_PartialNotExisting1",
+  "automationType": "cpp",
+  "plmDescription": "验证多个设备中部分不存在且测点一致时仍可返回已存在设备的数据。"
+ },
+ "TsFile-342": {
+  "name": "多设备ID部分不存在2",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Multi_PartialNotExisting2",
+  "automationType": "cpp",
+  "plmDescription": "验证多个设备中部分不存在且测点不一致时仍可正确查询已存在数据。"
+ },
+ "TsFile-343": {
+  "name": "多设备ID全部不存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Multi_AllNotExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询的多个设备全部不存在时返回空结果集。"
+ },
+ "TsFile-344": {
+  "name": "设备ID小写",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Lowercase",
+  "automationType": "cpp",
+  "plmDescription": "验证小写设备 ID 可以正常写入和查询。"
+ },
+ "TsFile-345": {
+  "name": "设备ID大写",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Uppercase",
+  "automationType": "cpp",
+  "plmDescription": "验证大写设备 ID 可以正常写入和查询。"
+ },
+ "TsFile-346": {
+  "name": "设备ID含数字",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Numbers",
+  "automationType": "cpp",
+  "plmDescription": "验证包含纯数字段的设备 ID 可以正常写入和查询。"
+ },
+ "TsFile-347": {
+  "name": "设备ID含下划线",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Underscore",
+  "automationType": "cpp",
+  "plmDescription": "验证包含下划线的设备 ID 可以正常写入和查询。"
+ },
+ "TsFile-348": {
+  "name": "设备ID含中文",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_UnicodeChinese",
+  "automationType": "cpp",
+  "plmDescription": "验证包含中文字符的设备 ID 可以正常写入和查询。"
+ },
+ "TsFile-349": {
+  "name": "设备ID含空格",
+  "nodeId": "TsFileTreeQueryByRowTest.TestDeviceId_Space",
+  "automationType": "cpp",
+  "plmDescription": "验证包含空格及特殊字符的设备 ID 可以正常写入和查询。"
+ },
+ "TsFile-350": {
+  "name": "单测点存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Single_Existing",
+  "automationType": "cpp",
+  "plmDescription": "验证查询单个已存在测点时返回全部预期数据。"
+ },
+ "TsFile-351": {
+  "name": "单测点不存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Single_NotExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询单个不存在测点时返回空结果集。"
+ },
+ "TsFile-352": {
+  "name": "多测点全部存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Multi_AllExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询多个全部存在的测点时返回正确结果。"
+ },
+ "TsFile-353": {
+  "name": "多测点部分不存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Multi_PartialNotExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询多个测点且部分不存在时能够正确处理并返回可用数据。"
+ },
+ "TsFile-354": {
+  "name": "多测点全部不存在",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Multi_AllNotExisting",
+  "automationType": "cpp",
+  "plmDescription": "验证查询的多个测点全部不存在时返回空结果集。"
+ },
+ "TsFile-355": {
+  "name": "测点小写",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Lowercase",
+  "automationType": "cpp",
+  "plmDescription": "验证小写测点名可以正常写入和查询。"
+ },
+ "TsFile-356": {
+  "name": "测点大写",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Uppercase",
+  "automationType": "cpp",
+  "plmDescription": "验证大写测点名可以正常写入和查询。"
+ },
+ "TsFile-357": {
+  "name": "测点含数字",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Numbers",
+  "automationType": "cpp",
+  "plmDescription": "验证包含纯数字的测点名可以正常写入和查询。"
+ },
+ "TsFile-358": {
+  "name": "测点含下划线",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Underscore",
+  "automationType": "cpp",
+  "plmDescription": "验证包含下划线的测点名可以正常写入和查询。"
+ },
+ "TsFile-359": {
+  "name": "测点含中文",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_UnicodeChinese",
+  "automationType": "cpp",
+  "plmDescription": "验证包含中文字符的测点名可以正常写入和查询。"
+ },
+ "TsFile-360": {
+  "name": "测点含空格",
+  "nodeId": "TsFileTreeQueryByRowTest.TestMeasurement_Space",
+  "automationType": "cpp",
+  "plmDescription": "验证包含空格及特殊字符的测点名可以正常写入和查询。"
+ },
+ "TsFile-367": {
+  "name": "限制小于偏移",
+  "nodeId": "TsFileTreeQueryByRowTest.TestLimit_LessThanOffset",
+  "automationType": "cpp",
+  "plmDescription": "验证 limit 小于 offset 时仍按接口规则返回正确的指定行数。"
+ },
+ "TsFile-369": {
+  "name": "获取全部设备ID",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetAllDeviceIds_Basic",
+  "automationType": "cpp",
+  "plmDescription": "验证 get_all_device_ids 可以获取包含大小写、中文、数字及特殊字符的全部设备 ID。"
+ },
+ "TsFile-370": {
+  "name": "获取全部设备ID形式",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetAllDevices_IDeviceIDForm",
+  "automationType": "cpp",
+  "plmDescription": "验证以 IDeviceID 对象形式获取全部设备，并保留设备名称及特殊字符。"
+ },
+ "TsFile-371": {
+  "name": "指定设备时序元数据1",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_SpecifiedDevice1",
+  "automationType": "cpp",
+  "plmDescription": "验证逐个指定设备获取全部测点元数据及对应数据类型。"
+ },
+ "TsFile-373": {
+  "name": "部分设备存在时序元数据",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_PartialDevicesExist",
+  "automationType": "cpp",
+  "plmDescription": "验证指定设备列表中部分设备不存在时，仅返回已存在设备的元数据。"
+ },
+ "TsFile-375": {
+  "name": "全部设备时序元数据测试",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_AllDevice_Test",
+  "automationType": "cpp",
+  "plmDescription": "验证不指定设备时可以获取文件中全部设备和测点的元数据。"
+ },
+ "TsFile-379": {
+  "name": "时序元数据写记录统计",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_RecordWriteStatistic",
+  "automationType": "cpp",
+  "plmDescription": "验证使用 Record 写入数据时，测点统计信息仍能正确生成。"
+ },
+ "TsFile-380": {
+  "name": "时序元数据最大最小统计",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_MinMaxStatistic",
+  "automationType": "cpp",
+  "plmDescription": "验证测点元数据能够正确记录整数和浮点测点的最小值、最大值。"
+ },
+ "TsFile-381": {
+  "name": "对齐时序元数据",
+  "nodeId": "TsFileTreeGetTimeseriesMetadataTest.TestGetTimeseriesMetadata_AlignedTimeseries",
+  "automationType": "cpp",
+  "plmDescription": "验证对齐时间序列的测点元数据、数据类型及统计信息均正确。"
+ },
+ "TsFile-386": {
+  "name": "打开仅含头部文件",
+  "nodeId": "RestorableTsFileWriterTest.OpenFileWithOnlyHeader",
+  "automationType": "cpp",
+  "plmDescription": "验证只有 Magic 和版本头的文件也可以被识别并恢复。"
+ },
+ "TsFile-387": {
+  "name": "截断恢复并提供写入器",
+  "nodeId": "RestorableTsFileWriterTest.TruncateRecoversAndProvidesWriter",
+  "automationType": "cpp",
+  "plmDescription": "验证截断恢复后可以重新初始化 TsFileWriter 并继续写入数据。"
+ },
+ "TsFile-388": {
+  "name": "树模型多段设备恢复写入",
+  "nodeId": "RestorableTsFileWriterTest.TreeModelMultiSegmentDeviceRecoverAndWrite",
+  "automationType": "cpp",
+  "plmDescription": "验证多层设备路径文件损坏恢复后可以继续写入并保持数据可读。"
+ },
+ "TsFile-389": {
+  "name": "树写入器多设备恢复写入",
+  "nodeId": "RestorableTsFileWriterTest.MultiDeviceRecoverAndWriteWithTreeWriter",
+  "automationType": "cpp",
+  "plmDescription": "验证恢复后使用树模型写入器写入多设备、多类型数据，并可正确查询。"
+ },
+ "TsFile-390": {
+  "name": "对齐时序恢复写入",
+  "nodeId": "RestorableTsFileWriterTest.AlignedTimeseriesRecoverAndWrite",
+  "automationType": "cpp",
+  "plmDescription": "验证对齐时间序列文件损坏后可以恢复并继续写入（当前用例暂跳过，待修复）。"
+ },
+ "TsFile-391": {
+  "name": "对齐时序恢复写空值",
+  "nodeId": "RestorableTsFileWriterTest.AlignedTimeseriesRecoverAndWriteNullValue",
+  "automationType": "cpp",
+  "plmDescription": "验证对齐时间序列恢复后写入空值数据的行为（当前用例暂跳过，待修复）。"
+ },
+ "TsFile-392": {
+  "name": "恢复文件状态校验",
+  "nodeId": "RestorableTsFileWriterTest.RecoveredFileStateVerification",
+  "automationType": "cpp",
+  "plmDescription": "验证文件恢复后 can_write、has_crashed、截断位置和文件路径等状态信息正确。"
+ },
+ "TsFile-393": {
+  "name": "不同损坏级别",
+  "nodeId": "RestorableTsFileWriterTest.DifferentCorruptionLevels",
+  "automationType": "cpp",
+  "plmDescription": "验证不同尾部损坏程度的文件都能恢复到有效截断位置。"
+ },
+ "TsFile-394": {
+  "name": "恢复写入数据可读取",
+  "nodeId": "RestorableTsFileWriterTest.RecoveredAndWrittenDataIsReadable",
+  "automationType": "cpp",
+  "plmDescription": "验证文件恢复后写入的新数据可以被正确读取，且总行数符合预期。"
+ }
+}

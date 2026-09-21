@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 #include <string>
-#include <filesystem>
+#include "fs_compat.h"
 
 #include "common/db_common.h"
 #include "common/path.h"
@@ -38,29 +38,29 @@ void init_file_path_tree() {
     ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
     // 将获取到的路径字符数组转换为 std::string 对象
     std::string executable_path = std::string( result, (count > 0) ? count : 0 );
-    // 使用 std::filesystem::path 对象解析可执行文件路径并返回目录部分
-    std::filesystem::path path_obj(executable_path);
+    // 使用 fs_compat::path 对象解析可执行文件路径并返回目录部分
+    fs_compat::path path_obj(executable_path);
     // 获取可执行文件所在目录
     std::string exec_path = path_obj.parent_path().string();
     // 获取项目根目录（假设可执行文件在项目根目录或其子目录中）
-    std::filesystem::path root_path(exec_path);
+    fs_compat::path root_path(exec_path);
     // 向上查找直到找到包含"data"目录的根目录
-    while (!root_path.empty() && !std::filesystem::exists(root_path / "data")) {
+    while (!root_path.empty() && !fs_compat::exists(root_path / "data")) {
         root_path = root_path.parent_path();
     }
     // 判断是否找到了根目录
     if (!root_path.empty()) {
         // 构建完整的文件存放目录路径
-        std::filesystem::path directory_path = root_path / "data" / "tsfile";
+        fs_compat::path directory_path = root_path / "data" / "tsfile";
          // 确认目录存在
-        if (!filesystem::exists(directory_path) || !filesystem::is_directory(directory_path)) {
+        if (!fs_compat::exists(directory_path) || !fs_compat::is_directory(directory_path)) {
             cerr << "Directory does not exist: " << directory_path << endl;
         }
         // 构建完整的文件路径
-        std::filesystem::path file_path_ = directory_path / tree_file_path;
+        fs_compat::path file_path_ = directory_path / "test_tree.tsfile";
         // 只删除指定路径的文件，并在删除前判断文件是否存在
-        if (std::filesystem::exists(file_path_) && std::filesystem::is_regular_file(file_path_)) {
-            std::filesystem::remove(file_path_);
+        if (fs_compat::exists(file_path_) && fs_compat::is_regular_file(file_path_)) {
+            fs_compat::remove(file_path_);
         }
         // 更新全局文件路径变量
         tree_file_path = file_path_.string();
@@ -139,6 +139,7 @@ void reader_tree(vector<string> path_list, vector<TSDataType> data_types, int64_
 /**
  * 测试注册时间序列1：int TsFileWriter::register_timeseries(const string &device_id, const MeasurementSchema &measurement_schema)
  */
+// 用例 CPP-TREE-001：注册时间序列
 TEST_F(TsFileWriterTreeTest, RegisterTimeSeries1) {
     // 创建一个TsFileWriter对象
     TsFileWriter* tsfile_writer_ = new TsFileWriter();
@@ -190,6 +191,7 @@ TEST_F(TsFileWriterTreeTest, RegisterTimeSeries1) {
 
 /**
  * 测试写入表格数据1：int TsFileWriter::write_table(Tablet &tablet)
+ // 用例 CPP-TREE-002：写入表
  */
 TEST_F(TsFileWriterTreeTest, WriteTable1) {
     // 创建一个TsFileWriter对象
