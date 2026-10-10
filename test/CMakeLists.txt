@@ -12,6 +12,10 @@ ${CMAKE_SOURCE_DIR}/test/tree/test_tree_get_timeseries_metadata.cpp
 ${CMAKE_SOURCE_DIR}/test/tree/test_tree_restorable_writer.cpp
 # 文件后端 / mmap 读后端用例（RN-144）
 ${CMAKE_SOURCE_DIR}/test/other/test_file_read_backend.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_random_access_read_failure.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_random_access_contract.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_random_access_crossif.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_random_access_tag_sweep.cpp
 # 测试覆盖率的源文件
 ${CMAKE_SOURCE_DIR}/include
 )

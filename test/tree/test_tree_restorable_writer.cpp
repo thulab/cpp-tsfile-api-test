@@ -421,7 +421,7 @@ TEST_F(RestorableTsFileWriterTest, MultiDeviceRecoverAndWriteWithTreeWriter) {
     while (qds->next(has_next) == E_OK && has_next) {
         cout << qds->get_value<int64_t>(1) << "\t";
         for (int i = 2; i < metadata->get_column_count(); i++) {
-            if (qds->is_null(2)) {
+            if (qds->is_null(i)) {
                 cout << "NULL" << "\t";
             } else {
                 switch (metadata->get_column_type(i)) {
@@ -566,7 +566,7 @@ TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWrite) {
     while (qds->next(has_next) == E_OK && has_next) {
         cout << qds->get_value<int64_t>(1) << "\t";
         for (int i = 2; i < result_set_metadata->get_column_count(); i++) {
-            if (qds->is_null(2)) {
+            if (qds->is_null(i)) {
                 cout << "NULL" << "\t";
             } else {
                 switch (result_set_metadata->get_column_type(i)) {
@@ -709,7 +709,7 @@ TEST_F(RestorableTsFileWriterTest, AlignedTimeseriesRecoverAndWriteNullValue) {
     while (qds->next(has_next) == E_OK && has_next) {
         cout << qds->get_value<int64_t>(1) << "\t";
         for (int i = 2; i < result_set_metadata->get_column_count(); i++) {
-            if (qds->is_null(2)) {
+            if (qds->is_null(i)) {
                 cout << "NULL" << "\t";
             } else {
                 switch (result_set_metadata->get_column_type(i)) {
