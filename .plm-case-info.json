@@ -676,5 +676,113 @@
   "nodeId": "RestorableTsFileWriterTest.RecoveredAndWrittenDataIsReadable",
   "automationType": "cpp",
   "plmDescription": "验证文件恢复后写入的新数据可以被正确读取，且总行数符合预期。"
+ },
+ "TsFile-740": {
+  "name": "默认读后端为 PREAD",
+  "nodeId": "LocalRandomAccessReadFileTest.PreadIsTheDefaultBackend",
+  "automationType": "cpp",
+  "plmDescription": "未显式配置读取后端时，TsFile 读文件默认走 PREAD，避免行为随版本漂移（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-741": {
+  "name": "PREAD 定位读行为不变",
+  "nodeId": "LocalRandomAccessReadFileTest.PreadPreservesPositionedReadBehavior",
+  "automationType": "cpp",
+  "plmDescription": "PREAD 后端下定位读（offset/length）语义与此前保持一致（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-742": {
+  "name": "MMAP 有界读与资源释放",
+  "nodeId": "LocalRandomAccessReadFileTest.MmapReadsBoundedRangesAndReleasesResources",
+  "automationType": "cpp",
+  "plmDescription": "MMAP 后端下越界读被约束在文件范围内，close 后映射资源释放（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-743": {
+  "name": "AUTO 优先 MMAP 且 close 幂等",
+  "nodeId": "LocalRandomAccessReadFileTest.AutoPrefersMmapAndCloseIsIdempotent",
+  "automationType": "cpp",
+  "plmDescription": "AUTO 后端优先选用 MMAP，且重复 close 不报错（幂等）（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-744": {
+  "name": "AUTO 回退与强制 MMAP 失败报错",
+  "nodeId": "LocalRandomAccessReadFileTest.AutoFallsBackButRequiredMmapReportsFailure",
+  "automationType": "cpp",
+  "plmDescription": "AUTO 在 MMAP 不可用时回退到 PREAD；强制 MMAP 且不可用时明确报错（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-745": {
+  "name": "AUTO 回退与强制 MMAP 不支持报错",
+  "nodeId": "LocalRandomAccessReadFileTest.AutoFallsBackButRequiredMmapReportsUnsupported",
+  "automationType": "cpp",
+  "plmDescription": "强制 MMAP 但平台不支持时报错，而非静默降级（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-746": {
+  "name": "空文件在映射前被拒绝",
+  "nodeId": "LocalRandomAccessReadFileTest.EmptyFileIsRejectedBeforeMapping",
+  "automationType": "cpp",
+  "plmDescription": "对空文件直接拒绝创建映射，避免产生无效映射（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-747": {
+  "name": "非法配置不改变当前后端",
+  "nodeId": "LocalRandomAccessReadFileTest.InvalidConfigurationDoesNotChangeBackend",
+  "automationType": "cpp",
+  "plmDescription": "非法后端配置值被拒绝，且不改变当前生效的后端（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-748": {
+  "name": "文件后端配置接口往返与校验",
+  "nodeId": "CWrapperTest.FileReadBackendConfigurationRoundTripsAndValidates",
+  "automationType": "cpp",
+  "plmDescription": "文件后端配置接口可设置/读取并做取值校验（跨语言一致性）（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-749": {
+  "name": "TsFileReader 经 RandomAccessReadFile 读取",
+  "nodeId": "TsFileReaderTest.ReadsThroughRandomAccessReadFile",
+  "automationType": "cpp",
+  "plmDescription": "TsFileReader 能通过 RandomAccessReadFile 抽象完成读取（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-750": {
+  "name": "UTF-8 路径下打开本地随机读文件",
+  "nodeId": "Utf8PathTest.LocalRandomAccessReadFileOpensUtf8Path",
+  "automationType": "cpp",
+  "plmDescription": "UTF-8 路径下的本地随机读文件可正常打开读取（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-662": {
+  "name": "跨语言｜C++ 打开 Python 生成的索引",
+  "nodeId": "DatasetIndexCrossLangTest.OpensPythonIndexAndResolvesIds",
+  "automationType": "cpp",
+  "plmDescription": "补齐自测 case05（跨语言外部索引未执行）：用 Python 生成的 `.tsidx` 在 C++ 侧打开并按四类查找验证（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-663": {
+  "name": "跨语言｜损坏索引的状态码钉死",
+  "nodeId": "DatasetIndexCrossLangTest.RejectsDamagedIndexWithSpecificStatus",
+  "automationType": "cpp",
+  "plmDescription": "C++ 侧对各类损坏索引必须返回具体状态码（不使用笼统判据）（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-791": {
+  "name": "C++ 接入｜RandomAccessReadFile 基线",
+  "nodeId": "RandomAccessReadContract.Case42BaselineMatchesPathReader",
+  "automationType": "cpp",
+  "plmDescription": "C++ 侧通过 RandomAccessReadFile 抽象读取本地文件（基线）（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-792": {
+  "name": "C++ 接入｜自定义 RandomAccessReadFile 实现",
+  "nodeId": "RandomAccessReadContract.Case43ShortReadFilledInternally",
+  "automationType": "cpp",
+  "plmDescription": "C++ 调用方自定义随机访问实现（含短读）能否正确工作（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-793": {
+  "name": "跨接口｜Python source 与 C++ 读取等价",
+  "nodeId": "RandomAccessReadContract.Case44CrossInterfaceJson",
+  "automationType": "cpp",
+  "plmDescription": "同一数据通过 Python source 与 C++ 读取结果一致（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-807": {
+  "name": "C++ 契约｜并发 read() 安全",
+  "nodeId": "RandomAccessReadContract.Case59ConcurrentReadsThreadSafe",
+  "automationType": "cpp",
+  "plmDescription": "设计文档 §4.1.2：初始化后并发 read() 必须安全（第三方实现须满足）（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
+ },
+ "TsFile-808": {
+  "name": "C++ 契约｜非 EOF 短读实现=调用方违约",
+  "nodeId": "RandomAccessReadContract.Case60NonEofShortReadRecorded",
+  "automationType": "cpp",
+  "plmDescription": "设计文档 §4.1.2 要求实现内部连续处理短读；验证「实现故意在非 EOF 返回短读」时的实际行为口径（编号回填：由 2026-10-12 导入的 RN-142~147 批次）"
  }
 }

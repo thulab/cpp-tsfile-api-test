@@ -338,6 +338,60 @@
   ],
   "TsFile-394": [
    "RestorableTsFileWriterTest.RecoveredAndWrittenDataIsReadable"
+  ],
+  "TsFile-740": [
+   "LocalRandomAccessReadFileTest.PreadIsTheDefaultBackend"
+  ],
+  "TsFile-741": [
+   "LocalRandomAccessReadFileTest.PreadPreservesPositionedReadBehavior"
+  ],
+  "TsFile-742": [
+   "LocalRandomAccessReadFileTest.MmapReadsBoundedRangesAndReleasesResources"
+  ],
+  "TsFile-743": [
+   "LocalRandomAccessReadFileTest.AutoPrefersMmapAndCloseIsIdempotent"
+  ],
+  "TsFile-744": [
+   "LocalRandomAccessReadFileTest.AutoFallsBackButRequiredMmapReportsFailure"
+  ],
+  "TsFile-745": [
+   "LocalRandomAccessReadFileTest.AutoFallsBackButRequiredMmapReportsUnsupported"
+  ],
+  "TsFile-746": [
+   "LocalRandomAccessReadFileTest.EmptyFileIsRejectedBeforeMapping"
+  ],
+  "TsFile-747": [
+   "LocalRandomAccessReadFileTest.InvalidConfigurationDoesNotChangeBackend"
+  ],
+  "TsFile-748": [
+   "CWrapperTest.FileReadBackendConfigurationRoundTripsAndValidates"
+  ],
+  "TsFile-749": [
+   "TsFileReaderTest.ReadsThroughRandomAccessReadFile"
+  ],
+  "TsFile-750": [
+   "Utf8PathTest.LocalRandomAccessReadFileOpensUtf8Path"
+  ],
+  "TsFile-662": [
+   "DatasetIndexCrossLangTest.OpensPythonIndexAndResolvesIds"
+  ],
+  "TsFile-663": [
+   "DatasetIndexCrossLangTest.RejectsDamagedIndexWithSpecificStatus"
+  ],
+  "TsFile-791": [
+   "RandomAccessReadContract.Case42BaselineMatchesPathReader"
+  ],
+  "TsFile-792": [
+   "RandomAccessReadContract.Case43ShortReadFilledInternally"
+  ],
+  "TsFile-793": [
+   "RandomAccessReadContract.Case44CrossInterfaceJson"
+  ],
+  "TsFile-807": [
+   "RandomAccessReadContract.Case59ConcurrentReadsThreadSafe"
+  ],
+  "TsFile-808": [
+   "RandomAccessReadContract.Case60NonEofShortReadRecorded"
   ]
  },
  "revmap": {
@@ -453,7 +507,25 @@
   "RestorableTsFileWriterTest.AlignedTimeseriesRecoverAndWriteNullValue": "TsFile-391",
   "RestorableTsFileWriterTest.RecoveredFileStateVerification": "TsFile-392",
   "RestorableTsFileWriterTest.DifferentCorruptionLevels": "TsFile-393",
-  "RestorableTsFileWriterTest.RecoveredAndWrittenDataIsReadable": "TsFile-394"
+  "RestorableTsFileWriterTest.RecoveredAndWrittenDataIsReadable": "TsFile-394",
+  "LocalRandomAccessReadFileTest.PreadIsTheDefaultBackend": "TsFile-740",
+  "LocalRandomAccessReadFileTest.PreadPreservesPositionedReadBehavior": "TsFile-741",
+  "LocalRandomAccessReadFileTest.MmapReadsBoundedRangesAndReleasesResources": "TsFile-742",
+  "LocalRandomAccessReadFileTest.AutoPrefersMmapAndCloseIsIdempotent": "TsFile-743",
+  "LocalRandomAccessReadFileTest.AutoFallsBackButRequiredMmapReportsFailure": "TsFile-744",
+  "LocalRandomAccessReadFileTest.AutoFallsBackButRequiredMmapReportsUnsupported": "TsFile-745",
+  "LocalRandomAccessReadFileTest.EmptyFileIsRejectedBeforeMapping": "TsFile-746",
+  "LocalRandomAccessReadFileTest.InvalidConfigurationDoesNotChangeBackend": "TsFile-747",
+  "CWrapperTest.FileReadBackendConfigurationRoundTripsAndValidates": "TsFile-748",
+  "TsFileReaderTest.ReadsThroughRandomAccessReadFile": "TsFile-749",
+  "Utf8PathTest.LocalRandomAccessReadFileOpensUtf8Path": "TsFile-750",
+  "DatasetIndexCrossLangTest.OpensPythonIndexAndResolvesIds": "TsFile-662",
+  "DatasetIndexCrossLangTest.RejectsDamagedIndexWithSpecificStatus": "TsFile-663",
+  "RandomAccessReadContract.Case42BaselineMatchesPathReader": "TsFile-791",
+  "RandomAccessReadContract.Case43ShortReadFilledInternally": "TsFile-792",
+  "RandomAccessReadContract.Case44CrossInterfaceJson": "TsFile-793",
+  "RandomAccessReadContract.Case59ConcurrentReadsThreadSafe": "TsFile-807",
+  "RandomAccessReadContract.Case60NonEofShortReadRecorded": "TsFile-808"
  },
  "aliases": {
   "Cpp-Table-001": [

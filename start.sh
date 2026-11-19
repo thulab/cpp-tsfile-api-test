@@ -10,8 +10,6 @@ TGT="${2:-}"
 REPORTS_DIR="${REPORT_DIR:-${TSFILE_REPORT_DIR:-reports}}"
 BUILD_DIR="build"
 BIN="$BUILD_DIR/test/main"
-CMAKE_BIN="/usr/local/cmake-3.29.6-linux-aarch64/bin/cmake"
-[ -x "$CMAKE_BIN" ] || CMAKE_BIN="cmake"
 
 # ---- proxy (不硬编码地址，从环境变量 TEST_PROGRAM_PROXY 读取) ----
 proxy_apply() {
@@ -30,7 +28,6 @@ for a in "$@"; do [ "$a" = "--proxy" ] && proxy_apply; done
 
 usage() { cat >&2 <<'EOF'
 Usage: sh start.sh <command> [target] [--proxy]
-  prepare            编译 TsFile C++ SDK + gtest + 测试程序
   all                运行全部测试 (gtest)
   page <name>        page table | page tree
   case <case-id>     Suite.TestName (例: TsFileTableQueryByRowTest.TestTableName_Lowercase)
@@ -39,76 +36,13 @@ Usage: sh start.sh <command> [target] [--proxy]
   list-cases --json  用例清单 (JSON)
   help               帮助
 
-Proxy: 设置环境变量后使用 --proxy (prepare 也需要)
+Proxy: 设置环境变量后使用 --proxy
   export TEST_PROGRAM_PROXY=http://your-proxy:port
   sh start.sh <command> --proxy
 EOF
 }
 
-need_bin() { [ -x "$BIN" ] || { echo "ERROR: 未编译，先 sh start.sh prepare" >&2; exit 1; }; }
-
-prepare() {
-  # 1. gtest（从系统包安装或从源码编译）
-  if [ ! -f lib/libgtest.a ] && [ ! -f lib/libgtest.so ]; then
-    local gz="/root/test-program/v1.14.0.zip"
-    if [ -f "$gz" ]; then
-      echo "=== 编译 Google Test 1.14 ==="
-      (cd /tmp && rm -rf googletest-1.14.0 && unzip -q "$gz" && cd googletest-1.14.0 && mkdir -p b && cd b && "$CMAKE_BIN" .. -DCMAKE_BUILD_TYPE=Release 2>&1 | tail -1 && make -j4 -s 2>&1 | tail -1)
-      cp /tmp/googletest-1.14.0/b/lib/libgtest.a lib/ 2>/dev/null
-      cp /tmp/googletest-1.14.0/b/lib/libgtest_main.a lib/ 2>/dev/null
-      rm -rf include/gtest 2>/dev/null
-      cp -r /tmp/googletest-1.14.0/googletest/include/gtest include/ 2>/dev/null
-      echo "=== gtest 安装完成 ==="
-    else
-      echo "WARNING: libgtest.a 不存在且 $gz 也找不到，请手动安装"
-    fi
-  fi
-
-  # 2. TsFile C++ SDK
-  local ts="../tsfile"
-  [ -f "$ts/pom.xml" ] || { echo "ERROR: $ts 不存在" >&2; return 1; }
-  echo "=== 编译 TsFile C++ SDK ==="
-  (cd "$ts" && mvn install -P with-cpp -DskipTests -Dspotless.check.skip=true 2>&1) || { echo "ERROR: TsFile 编译失败" >&2; return 1; }
-
-  # 3. 同步产物
-  echo "=== 同步 SDK 头文件和库文件 ==="
-  local cpp="$ts/cpp"
-  # 兼容两种 SDK 产物布局：老版本 cpp/build/，新版本 cpp/target/build/
-  # 注意：必须"先删后拷"覆盖 —— cp -n 不会替换已有文件/软链，会导致 include/lib 半新半旧
-  for cpp_out in "$cpp/build" "$cpp/target/build"; do
-    if [ -d "$cpp_out/include" ]; then
-      for entry in "$cpp_out"/include/*; do
-        [ -e "$entry" ] || continue
-        name=$(basename "$entry")
-        case "$name" in ""|*/*) continue;; esac
-        rm -rf "include/$name"
-        cp -a "$entry" include/
-      done
-    fi
-    if [ -d "$cpp_out/lib" ]; then
-      rm -f lib/libtsfile.so lib/libtsfile.so.* 2>/dev/null
-      for entry in "$cpp_out"/lib/*; do
-        [ -e "$entry" ] || continue
-        cp -af "$entry" lib/
-      done
-      # 清理软链未引用的旧版本动态库
-      cur=$(basename "$(readlink -f lib/libtsfile.so 2>/dev/null)" 2>/dev/null || true)
-      if [ -n "$cur" ]; then
-        for stale in lib/libtsfile.so.*; do
-          [ -e "$stale" ] || continue
-          [ "$(basename "$stale")" = "$cur" ] || rm -f "$stale"
-        done
-      fi
-    fi
-  done
-
-  # 4. CMake + Make
-  echo "=== CMake + Make ==="
-  rm -rf "$BUILD_DIR" && mkdir -p "$BUILD_DIR"
-  (cd "$BUILD_DIR" && "$CMAKE_BIN" .. -DCMAKE_BUILD_TYPE=Release 2>&1 | tail -1 && make -j4 2>&1 | tail -3)
-  if [ -x "$BIN" ]; then echo "=== prepare 完成: $BIN ==="; ls -lh "$BIN"
-  else echo "ERROR: $BIN 未生成" >&2; return 1; fi
-}
+need_bin() { [ -x "$BIN" ] || { echo "ERROR: 测试程序未编译；请先通过 PLM 构建（产品源码构建）" >&2; exit 1; }; }
 
 list_cases() {
   need_bin; mkdir -p "$REPORTS_DIR"
@@ -166,7 +100,16 @@ case_one() {
     echo "[start.sh] .plm-case-id-map.json 缺失，请恢复备份（list_cases 不生成 PLM CASE_ID map）" >&2
     return 5
   fi
-  local filter=$(python3 map_lookup.py "$1" 2>/dev/null); [ -z "$filter" ] && filter="$1"
+  local filter=$(python3 map_lookup.py "$1" 2>/dev/null)
+  # 2026-10-13：编号未登记时 map_lookup 输出为空，旧逻辑回退为"用编号当 gtest filter"，
+  # 零匹配后产出空 <testsuites/>，PLM 侧只能记「用例未产出结果」。这里对 PLM 编号形态
+  # 提前明确失败；手工传 Suite.Test 原名（含 .）时不拦，保持旧行为。
+  if [ -z "$filter" ]; then
+    case "$1" in
+      *.*) filter="$1" ;;
+      *) echo "[start.sh] CASE_ID 未登记于 .plm-case-id-map.json，无法定位测试（请先补映射）: $1" >&2; return 6 ;;
+    esac
+  fi
   timeout 240 "$BIN" --gtest_filter="$filter" --gtest_output="json:$REPORTS_DIR/case.json" 2>&1
   local rc=$?
   python3 -c "
@@ -176,6 +119,7 @@ jf = '$REPORTS_DIR/case.json'
 xf = '$REPORTS_DIR/case-$1.xml'
 if not os.path.exists(jf): sys.exit(2)
 with open(jf) as f: d = json.load(f)
+if not d.get('testsuites'): sys.exit(4)
 ET.register_namespace('', '')
 root = ET.Element('testsuites', name='gtest')
 for ts in d.get('testsuites', []):
@@ -197,6 +141,11 @@ for ts in d.get('testsuites', []):
 ET.ElementTree(root).write(xf, encoding='utf-8', xml_declaration=True)
 " 2>/dev/null
   local post_rc=$?
+  if [ $post_rc -eq 4 ]; then
+    echo "[start.sh] 目标测试未匹配到任何用例：映射指向的 gtest 用例不存在: $1" >&2
+    rm -f "$REPORTS_DIR/case-$1.xml" "$REPORTS_DIR/case.json"
+    return 6
+  fi
   if [ $post_rc -ne 0 ]; then
     echo "[start.sh] gtest JSON to XML conversion failed (exit=$post_rc)" >&2
     rm -f "$REPORTS_DIR/case-$1.xml"
@@ -380,7 +329,7 @@ SEDPY
 plm() { echo "[plm] 全量测试"; all; }
 
 case "$CMD" in
-  prepare) prepare;;  all) all;;  page) page "$TGT";;
+  all) all;;  page) page "$TGT";;
   case|case-id) case_one "$TGT" || exit;;  cases) cases_batch "$TGT" || exit;;
   plm|plm-all) plm;;  list-cases) list_cases;;  help|-h|--help) usage;;
   *.*) case_one "$CMD";;  *) echo "Unknown: $CMD" >&2; usage; exit 2;;
