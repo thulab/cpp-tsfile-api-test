@@ -24,6 +24,9 @@ ${CMAKE_SOURCE_DIR}/test/other/test_tsfile_cli_write.cpp
 ${CMAKE_SOURCE_DIR}/test/other/test_tsfile_cli_safety.cpp
 ${CMAKE_SOURCE_DIR}/test/other/test_tsfile_cli_interop.cpp
 ${CMAKE_SOURCE_DIR}/test/other/test_rle_malformed_input.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_alp_encoding.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_alp_security.cpp
+${CMAKE_SOURCE_DIR}/test/other/test_alp_errors.cpp
 # 测试覆盖率的源文件
 ${CMAKE_SOURCE_DIR}/include
 )
